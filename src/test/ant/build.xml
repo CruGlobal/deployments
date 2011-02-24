@@ -1,0 +1,19 @@
+<project name="deployment test script" default="deploy" basedir="." xmlns:deployments="antlib:org.ccci.deployments">
+  
+  <taskdef uri="antlib:org.ccci.deployments"
+      resource="org/ccci/deployment/antlib.xml"
+      classpath="target/deployments-1.0-SNAPSHOT.jar"/>
+  
+  <target name="deploy">
+    <deployments:deploy
+      application="${application}"
+      environment="${environment}"
+      username="${username}"
+      domain="${domain}"
+      password="${password}"
+      sourceDirectory="${sourceDirectory}"
+    />
+  </target>
+  
+  
+</project>

@@ -76,6 +76,7 @@ public class RemoteServiceControl
         {
             log("stopping");
             service.stop();
+            log("stopped");
         }
         finally
         {
