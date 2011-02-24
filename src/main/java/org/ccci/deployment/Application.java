@@ -18,7 +18,7 @@ public enum Application
             StaffServicesEnvironment staffServicesEnvironment;
             try
             {
-                staffServicesEnvironment = StaffServicesEnvironment.valueOf(options.environment);
+                staffServicesEnvironment = StaffServicesEnvironment.valueOf(options.environment.toUpperCase());
             }
             catch (IllegalArgumentException e)
             {

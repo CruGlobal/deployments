@@ -31,5 +31,5 @@ public interface WebappDeployment
      * Only applicable for {@link Packaging#EXPLODED} deployments
      * @return
      */
-    public ConfigFileDescriptor getConfigFileDescriptor();
+    public DeploymentFileDescription getDeploymentFileDescriptor();
 }

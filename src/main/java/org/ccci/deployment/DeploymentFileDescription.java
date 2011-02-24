@@ -4,13 +4,15 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class ConfigFileDescriptor
+//TODO: this is ugly.  Find something nicer.
+public class DeploymentFileDescription
 {
 
 
     private final Set<String> deploymentSpecificClasspathResources = Sets.newHashSet();
     private final Set<String> deploymentSpecificWebInfResources = Sets.newHashSet();
     private final Set<String> ignoredWebInfDirectories = Sets.newHashSet();
+    private String webInfLogDir;
 
     
     
@@ -28,6 +30,15 @@ public class ConfigFileDescriptor
     {
         return ignoredWebInfDirectories;
     }
-    
 
+    public void setWebInfLogDir(String webInfLogDir)
+    {
+        this.webInfLogDir = webInfLogDir;
+    }
+
+    public String getWebInfLogDir()
+    {
+        return webInfLogDir;
+    }
+    
 }

@@ -8,7 +8,7 @@ public class BasicWebappDeployment implements WebappDeployment
     private String name;
     private String deployedWarName;
     private Packaging packaging;
-    private ConfigFileDescriptor configFileDescriptor;
+    private DeploymentFileDescription deploymentFileDescription;
 
     
     public void setName(String name)
@@ -26,9 +26,9 @@ public class BasicWebappDeployment implements WebappDeployment
         this.packaging = packaging;
     }
 
-    public void setConfigFileDescriptor(ConfigFileDescriptor configFileDescriptor)
+    public void setConfigFileDescriptor(DeploymentFileDescription deploymentFileDescription)
     {
-        this.configFileDescriptor = configFileDescriptor;
+        this.deploymentFileDescription = deploymentFileDescription;
     }
 
     @Override
@@ -56,9 +56,9 @@ public class BasicWebappDeployment implements WebappDeployment
     }
 
     @Override
-    public ConfigFileDescriptor getConfigFileDescriptor()
+    public DeploymentFileDescription getDeploymentFileDescriptor()
     {
-        return configFileDescriptor;
+        return deploymentFileDescription;
     }
 
 }

@@ -1,6 +1,7 @@
 package org.ccci.windows.deployment.impl;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.Node;
@@ -43,10 +44,29 @@ public class TomcatWindowsAppserverInterface implements AppserverInterface
     public void shutdownServer()
     {
         RemoteServiceControl control = buildControl();
-        
         try
         {
             control.stopService();
+            
+            long startTime = System.currentTimeMillis();
+            while(!control.serviceIsStopped())
+            {
+                int maxWait = 30;
+                if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
+                {
+                    throw new RuntimeException("service not stopped after " + maxWait + " seconds");
+                }
+                try
+                {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                }
+                catch (InterruptedException e)
+                {
+                    //TODO: think about how to handle this right
+                    throw Throwables.propagate(e);
+                }
+            }
+            
         }
         catch (IOException e)
         {

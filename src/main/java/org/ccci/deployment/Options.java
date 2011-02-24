@@ -36,7 +36,6 @@ public class Options
     @Parameter(
         names = {"--password", "-p"}, 
         description = "password associated with username", 
-        required = true,
         password = true)
     public String password;
 

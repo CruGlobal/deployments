@@ -7,19 +7,17 @@ import org.apache.log4j.Logger;
 public class DeploymentDriver
 {
 
-    private final Options options;
+    private final DeploymentConfiguration configuration;
     
     public DeploymentDriver(Options options)
     {
-        this.options = options;
+        this.configuration = options.application.buildDeploymentConfiguration(options);
     }
 
     Logger log = Logger.getLogger(DeploymentDriver.class);
     
     public void deploy()
     {
-        DeploymentConfiguration configuration = options.application.buildDeploymentConfiguration(options);
-
         RestartType restartType = configuration.getDefaultRestartType();
         //TODO: allow user to specify restartType
 
@@ -34,6 +32,9 @@ public class DeploymentDriver
             log.info("beginning deployment process for " + node.getName());
             //TODO: do this for both nodes, before transferring files at all
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
+            
+            log.info("transferring new webapp to server");
+            transferInterface.transferNewDeploymentToServer(deployment, localStorage);
             
             if (configuration.supportsCautiousShutdown())
             {
@@ -56,12 +57,8 @@ public class DeploymentDriver
                 appserverInterface.stopApplication(deployment);
             }
 
-            log.info("transferring new webapp to temp storage");
-            transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment);
-            
             log.info("enabling new webapp");
-            transferInterface.transferNewDeploymentToServer(deployment, localStorage);
-            
+            transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment);
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
@@ -77,8 +74,10 @@ public class DeploymentDriver
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface();
             webappControlInterface.enableForService();
 
-            
+
             //TODO: figure out rollback logic
+            
+            log.info("deployment completed");
         }
     }
 

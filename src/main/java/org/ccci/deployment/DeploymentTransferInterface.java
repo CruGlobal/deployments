@@ -10,6 +10,13 @@ package org.ccci.deployment;
 public interface DeploymentTransferInterface
 {
 
+    /**
+     * Copies the local deployment to the server.  The web application may or may not be running during this
+     * process, so the current deployment on the server should not be disrupted.
+     * 
+     * @param deployment the deployment to be deployed
+     * @param localStorage defines where the local deployment lives
+     */
     public void transferNewDeploymentToServer(WebappDeployment deployment, LocalDeploymentStorage localStorage);
     
     /**

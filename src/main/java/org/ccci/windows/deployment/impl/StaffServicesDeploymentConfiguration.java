@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.BasicWebappDeployment;
-import org.ccci.deployment.ConfigFileDescriptor;
+import org.ccci.deployment.DeploymentFileDescription;
 import org.ccci.deployment.SpecificDirectoryDeploymentStorage;
 import org.ccci.deployment.DeploymentConfiguration;
 import org.ccci.deployment.DeploymentTransferInterface;
@@ -27,15 +27,23 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         STAGING(
             "Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
-            buildA012()),
+            buildA012(),
+            true),
+        TEST(
+            "Tomcat/instances/ss-inst-test", 
+            "Tomcat - Staff Services - Test", 
+            buildA012(),
+            true),
         SIEBEL_TEST(
             "W$/Tomcat/instances/ss-inst-siebel", 
             "Tomcat - Staff Services - Siebel", 
-            buildA321()),
+            buildA321(),
+            false),
         PRODUCTION(
             "/Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
-            buildA041A042());
+            buildA041A042(),
+            true);
 
         public final String serviceName;
         
@@ -44,28 +52,31 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
 
         public final List<Node> nodes;
 
-        private StaffServicesEnvironment(String tomcatBasePath, String serviceName, List<Node> nodes)
+        public final boolean moveWebInfLogs;
+
+        private StaffServicesEnvironment(String tomcatBasePath, String serviceName, List<Node> nodes, boolean moveWebInfLogs)
         {
             this.tomcatBasePath = tomcatBasePath;
             this.serviceName = serviceName;
             this.nodes = nodes;
+            this.moveWebInfLogs = moveWebInfLogs;
         }
 
         private static List<Node> buildA012()
         {
-            return ImmutableList.of(new Node("a012", "hart-a012.ccci.org"));
+            return ImmutableList.of(new Node("a012", "hart-a012.net.ccci.org"));
         }
         
         private static List<Node> buildA321()
         {
-            return ImmutableList.of(new Node("a321", "hart-a321.ccci.org"));
+            return ImmutableList.of(new Node("a321", "hart-a321.net.ccci.org"));
         }
         
         private static List<Node> buildA041A042()
         {
             return ImmutableList.of(
-                new Node("a041", "hart-a041.ccci.org"),
-                new Node("a042", "hart-a042.ccci.org"));
+                new Node("a041", "hart-a041.net.ccci.org"),
+                new Node("a042", "hart-a042.net.ccci.org"));
         }
 
         public List<Node> listNodes()
@@ -100,7 +111,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     @Override
     public DeploymentTransferInterface connectDeploymentTransferInterface(Node node)
     {
-        String remoteDeploymentDirectory = environment.tomcatBasePath + "/webapps/ss";
+        String remoteDeploymentDirectory = environment.tomcatBasePath + "/webapps";
         String remoteTransferDirectory = environment.tomcatBasePath + "/temp/ss-transfer";
         String remoteBackupDirectory = environment.tomcatBasePath + "/work/ss-previous-deployment";
         return new SmbDeploymentTransferService(
@@ -140,16 +151,18 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         return deployment;
     }
 
-    private ConfigFileDescriptor getConfigFileDescriptor()
+    private DeploymentFileDescription getConfigFileDescriptor()
     {
-        ConfigFileDescriptor descriptor = new ConfigFileDescriptor();
+        DeploymentFileDescription descriptor = new DeploymentFileDescription();
         descriptor.getDeploymentSpecificClasspathResources().addAll(
             ImmutableSet.of("Dbio.properties", "log4j.properties", "servlets.properties", "WebMacro.properties"));
         descriptor.getDeploymentSpecificWebInfResources().addAll(
             ImmutableSet.of("casLogoutRegistry.ser", "loggedInUsersFw.ser", "salaryOptionsSerialized.ser", "web.xml"));
         descriptor.getIgnoredWebInfDirectories().addAll(
             ImmutableSet.of("logs", "misc-lib", "notes", "sql", "SQR", "src", "test-src"));
+        descriptor.setWebInfLogDir("logs");
         
+        //ignored files: .settings, .project
         return descriptor;
     }
 

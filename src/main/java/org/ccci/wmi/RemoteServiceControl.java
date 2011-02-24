@@ -72,7 +72,6 @@ public class RemoteServiceControl
         }
         
         setTimeout(service);
-        
         try
         {
             log("stopping");
@@ -122,17 +121,20 @@ public class RemoteServiceControl
     
     private int getServiceStateChangeTimeout()
     {
-        try
-        {
-            return registryService.getHKeyLocalMachineRegistryValue(Integer.class,
-                        "System\\CurrentControlSet\\Control", "ServicesPipeTimeout");
-        }
-        catch (Exception e)
-        {
-            // TODO: hmmm
-            log.warn("unable to lookup service state change timeout", e);
-            return defaultStartTimeout;
-        }
+        return defaultStartTimeout;
+        
+        //not sure if this sort of thing is worth keeping around; it doesn't work, currently, on a012 at least.  It can't find the registry location.
+//        try
+//        {
+//            return registryService.getHKeyLocalMachineRegistryValue(Integer.class,
+//                        "System\\CurrentControlSet\\Control", "ServicesPipeTimeout");
+//        }
+//        catch (Exception e)
+//        {
+//            // TODO: hmmm
+//            log.warn("unable to lookup service state change timeout", e);
+//            return defaultStartTimeout;
+//        }
     }
 
 
@@ -161,6 +163,20 @@ public class RemoteServiceControl
         {
             Win32Service service = getService(session);
             return service.Started();
+        }
+        catch (Exception e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    public boolean serviceIsStopped()
+    {
+        try
+        {
+            Win32Service service = getService(session);
+            String state = service.State();
+            return state.equals("Stopped");
         }
         catch (Exception e)
         {
