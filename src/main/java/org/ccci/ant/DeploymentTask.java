@@ -26,7 +26,7 @@ public class DeploymentTask extends Task
     private String domain;
 
     @Override
-    public void execute() throws BuildException
+    public void execute()
     {
         require(application, "application");
         require(environment, "environment");
@@ -84,15 +84,21 @@ public class DeploymentTask extends Task
         rootLogger.setLevel(Level.ALL);
     }
     
-
     public void setEnvironment(String environment)
     {
         this.environment = environment;
     }
     
-    public void setApplication(Application application)
+    public void setApplication(String application)
     {
-        this.application = application;
+        try
+        {
+            this.application = Application.valueOf(application.toUpperCase().replace(" ", "_"));
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new BuildException();
+        }
     }
     
     public void setSourceDirectory(File sourceDirectory)
