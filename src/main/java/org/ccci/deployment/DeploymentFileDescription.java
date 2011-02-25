@@ -9,7 +9,7 @@ public class DeploymentFileDescription
 
     private final Set<String> deploymentSpecificPaths = Sets.newHashSet();
     private Set<String> ignoredPaths = Sets.newHashSet();
-    private String webInfLogDir;
+    private String logPath;
 
     
     public Set<String> getDeploymentSpecificPaths()
@@ -17,14 +17,14 @@ public class DeploymentFileDescription
         return deploymentSpecificPaths;
     }
 
-    public void setWebInfLogDir(String webInfLogDir)
+    public void setLogPath(String webInfLogDir)
     {
-        this.webInfLogDir = webInfLogDir;
+        this.logPath = webInfLogDir;
     }
 
-    public String getWebInfLogDir()
+    public String getLogPath()
     {
-        return webInfLogDir;
+        return logPath;
     }
 
     public Set<String> getIgnoredPaths()

@@ -176,7 +176,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
                 "/WEB-INF/src", 
                 "/WEB-INF/test-src"));
         
-        descriptor.setWebInfLogDir("logs");
+        descriptor.setLogPath("/WEB-INF/logs");
         
         return descriptor;
     }

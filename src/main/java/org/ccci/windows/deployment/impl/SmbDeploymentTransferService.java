@@ -262,16 +262,14 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     {
         if (deployment.getPackaging() == Packaging.EXPLODED)
         {
-            String webInfLogDir = deployment.getDeploymentFileDescriptor().getWebInfLogDir();
-            if (webInfLogDir != null)
+            String logPath = deployment.getDeploymentFileDescriptor().getLogPath();
+            if (logPath != null)
             {
                 SmbFile deploymentLogFilePath = endpoint.createChildDirectoryPath(
-                    endpoint.createChildDirectoryPath(deploymentPath, "WEB-INF"), 
-                    webInfLogDir);
-                
+                    deploymentPath, removeInitialSlash(logPath));
+                    
                 SmbFile transferLogFilePath = endpoint.createChildDirectoryPath(
-                    endpoint.createChildDirectoryPath(transferPath, "WEB-INF"), 
-                    webInfLogDir);
+                    transferPath, removeInitialSlash(logPath)); 
                 
                 deploymentLogFilePath.renameTo(transferLogFilePath);
             }
