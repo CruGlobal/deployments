@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.util.Set;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -118,25 +117,20 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
 
     private void copyConfigFilesFromCurrentToNewDeployment(SmbFile remoteTransferPath, SmbFile remoteDeploymentPath, DeploymentFileDescription deploymentFileDescription) throws MalformedURLException, UnknownHostException, SmbException
     {
-        SmbFile currentWebInfDir = endpoint.createChildDirectoryPath(remoteDeploymentPath, "WEB-INF");
-        SmbFile newWebInfDir = endpoint.createChildDirectoryPath(remoteTransferPath, "WEB-INF");
-        copyRemoteFiles(currentWebInfDir, newWebInfDir, deploymentFileDescription.getDeploymentSpecificWebInfResources());
-        
-        SmbFile currentClassesDir = endpoint.createChildDirectoryPath(currentWebInfDir, "classes");
-        SmbFile newClassesDir = endpoint.createChildDirectoryPath(newWebInfDir, "classes");
-        copyRemoteFiles(currentClassesDir, newClassesDir, deploymentFileDescription.getDeploymentSpecificClasspathResources());
-    }
-
-    private void copyRemoteFiles(SmbFile sourceDir, SmbFile targetDir, Set<String> filenames)
-            throws MalformedURLException, UnknownHostException, SmbException
-    {
-        for (String filename : filenames)
+        for (String path : deploymentFileDescription.getDeploymentSpecificPaths())
         {
-            SmbFile sourceFile = endpoint.createChildFilePath(sourceDir, filename);
-            SmbFile targetFile = endpoint.createChildFilePath(targetDir, filename);
+            path = removeInitialSlash(path);
+            SmbFile sourceFile = endpoint.createChildFilePath(remoteDeploymentPath, path);
+            SmbFile targetFile = endpoint.createChildFilePath(remoteTransferPath, path);
             assert !targetFile.exists();
             sourceFile.copyTo(targetFile);
         }
+    }
+
+    private String removeInitialSlash(String path)
+    {
+        Preconditions.checkArgument(path.startsWith("/"), "should start with a slash: %s", path);
+        return path.substring(1);
     }
 
     private void copyDeployment(File deploymentDir, SmbFile destination, DeploymentFileDescription deploymentFileDescription) throws IOException
@@ -146,37 +140,25 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
             destination.delete();
         }
         destination.mkdir();
-        recursivelyCopy(deploymentDir, destination, deploymentFileDescription);
+        recursivelyCopy(deploymentDir, destination, deploymentFileDescription, "");
     }
     
-    private void recursivelyCopy(File localDir, SmbFile destinationDir, final DeploymentFileDescription deploymentFileDescription) throws IOException
+    private void recursivelyCopy(
+         File localDir, 
+         SmbFile destinationDir, 
+         final DeploymentFileDescription deploymentFileDescription, 
+         final String currentPath) throws IOException
     {
         assert localDir.isDirectory();
         FilenameFilter transferFilter = new FilenameFilter()
         {
             public boolean accept(File dir, String filename)
             {
-                if (isHiddenFile(filename))
-                    return false;
-                
-                if (dir.getName().equals("WEB-INF"))
-                {
-                    Set<String> ignoredDirs = deploymentFileDescription.getIgnoredWebInfDirectories();
-                    if (ignoredDirs.contains(filename))
-                        return false;
-                    Set<String> ignoredFiles = deploymentFileDescription.getDeploymentSpecificWebInfResources();
-                    if (ignoredFiles.contains(filename))
-                        return false;
-                }
-                
-                if (dir.getParent().equals("WEB-INF")  && dir.getName().equals("classes") )
-                {
-                    Set<String> ignoredFiles = deploymentFileDescription.getDeploymentSpecificClasspathResources();
-                    if (ignoredFiles.contains(filename))
-                        return false;
-                }
-                
-                return true;
+                String filepath = currentPath + "/" + filename;
+                return
+                    !isHiddenFile(filename) &&
+                    !deploymentFileDescription.getIgnoredPaths().contains(filepath) && 
+                    !deploymentFileDescription.getDeploymentSpecificPaths().contains(filepath);
             }
 
             /** a hidden file, for example .DS_Store on macs, or eclipse or svn metadata */
@@ -197,7 +179,8 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
                 String name = child.getName();
                 final SmbFile destinationSubDir = endpoint.createChildDirectoryPath(destinationDir, name);
                 destinationSubDir.mkdir();
-                recursivelyCopy(child, destinationSubDir, deploymentFileDescription);
+                String subPath = currentPath + "/" + name;
+                recursivelyCopy(child, destinationSubDir, deploymentFileDescription, subPath);
             }
             else
             {

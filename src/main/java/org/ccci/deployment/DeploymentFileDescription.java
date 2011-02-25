@@ -4,31 +4,17 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-//TODO: this is ugly.  Find something nicer.
 public class DeploymentFileDescription
 {
 
-
-    private final Set<String> deploymentSpecificClasspathResources = Sets.newHashSet();
-    private final Set<String> deploymentSpecificWebInfResources = Sets.newHashSet();
-    private final Set<String> ignoredWebInfDirectories = Sets.newHashSet();
+    private final Set<String> deploymentSpecificPaths = Sets.newHashSet();
+    private Set<String> ignoredPaths = Sets.newHashSet();
     private String webInfLogDir;
 
     
-    
-    public Set<String> getDeploymentSpecificClasspathResources()
+    public Set<String> getDeploymentSpecificPaths()
     {
-        return deploymentSpecificClasspathResources;
-    }
-    
-    public Set<String> getDeploymentSpecificWebInfResources()
-    {
-        return deploymentSpecificWebInfResources;
-    }
-    
-    public Set<String> getIgnoredWebInfDirectories()
-    {
-        return ignoredWebInfDirectories;
+        return deploymentSpecificPaths;
     }
 
     public void setWebInfLogDir(String webInfLogDir)
@@ -39,6 +25,11 @@ public class DeploymentFileDescription
     public String getWebInfLogDir()
     {
         return webInfLogDir;
+    }
+
+    public Set<String> getIgnoredPaths()
+    {
+        return ignoredPaths;
     }
     
 }

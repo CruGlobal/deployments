@@ -154,15 +154,30 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     private DeploymentFileDescription getConfigFileDescriptor()
     {
         DeploymentFileDescription descriptor = new DeploymentFileDescription();
-        descriptor.getDeploymentSpecificClasspathResources().addAll(
-            ImmutableSet.of("Dbio.properties", "log4j.properties", "servlets.properties", "WebMacro.properties"));
-        descriptor.getDeploymentSpecificWebInfResources().addAll(
-            ImmutableSet.of("casLogoutRegistry.ser", "loggedInUsersFw.ser", "salaryOptionsSerialized.ser", "web.xml"));
-        descriptor.getIgnoredWebInfDirectories().addAll(
-            ImmutableSet.of("logs", "misc-lib", "notes", "sql", "SQR", "src", "test-src"));
+        descriptor.getDeploymentSpecificPaths().addAll(
+            ImmutableSet.of(
+                "/WEB-INF/casLogoutRegistry.ser", 
+                "/WEB-INF/loggedInUsersFw.ser", 
+                "/WEB-INF/salaryOptionsSerialized.ser", 
+                "/WEB-INF/web.xml",
+                "/WEB-INF/classes/Dbio.properties", 
+                "/WEB-INF/classes/log4j.properties", 
+                "/WEB-INF/classes/servlets.properties", 
+                "/WEB-INF/classes/WebMacro.properties"));
+        
+        descriptor.getIgnoredPaths().addAll(
+            ImmutableSet.of(
+                "/build.xml",
+                "/WEB-INF/logs", 
+                "/WEB-INF/misc-lib", 
+                "/WEB-INF/notes", 
+                "/WEB-INF/sql", 
+                "/WEB-INF/SQR", 
+                "/WEB-INF/src", 
+                "/WEB-INF/test-src"));
+        
         descriptor.setWebInfLogDir("logs");
         
-        //ignored files: .settings, .project
         return descriptor;
     }
 

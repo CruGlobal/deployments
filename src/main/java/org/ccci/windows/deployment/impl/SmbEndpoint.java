@@ -42,22 +42,26 @@ public class SmbEndpoint
         }
     }
 
-    public SmbFile createChildFilePath(SmbFile destinationDir, String filename) throws MalformedURLException
+    public SmbFile createChildFilePath(SmbFile destinationDir, String filepath) throws MalformedURLException
     {
-        Preconditions.checkArgument(!filename.contains("/"), "filename must not contain a slash: %s", filename);
-        String destinationDirUrl = getCorrectlyTerminatedUrl(destinationDir);
-        
-        return new SmbFile(destinationDirUrl, filename, auth);
+        return createChildPath(destinationDir, filepath, "filename", "");
     }
 
     public SmbFile createChildDirectoryPath(SmbFile destinationDir, String directoryname) throws MalformedURLException
     {
-        Preconditions.checkArgument(!directoryname.contains("/"), "directoryname must not contain a slash: %s", directoryname);
-        String destinationDirUrl = getCorrectlyTerminatedUrl(destinationDir);
-        
-        return new SmbFile(destinationDirUrl, directoryname + "/", auth);
+        return createChildPath(destinationDir, directoryname, "directoryname", "/");
     }
 
+    private SmbFile createChildPath(SmbFile destinationDir, String filepath, String parameterName,
+                                    String slashIfDirectory) throws MalformedURLException
+    {
+        Preconditions.checkArgument(!filepath.endsWith("/"), parameterName + " must not end with a slash: %s", filepath);
+        Preconditions.checkArgument(!filepath.startsWith("/"), parameterName + " must not start with a slash: %s", filepath);
+        String destinationDirUrl = getCorrectlyTerminatedUrl(destinationDir);
+        return new SmbFile(destinationDirUrl, filepath + slashIfDirectory, auth);
+    }
+
+    
     /*
      * the SmbFile constructor with 2 arguments is picky.  If the first argument (an SmbFile) is 
      * associated with a url that doesn't have a slash, then the last component of the url is lost
