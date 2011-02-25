@@ -164,8 +164,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
                 "/WEB-INF/classes/log4j.properties", 
                 "/WEB-INF/classes/servlets.properties", 
                 "/WEB-INF/classes/WebMacro.properties",
-                "/WEB-INF/classes/obiee.properties"
-                ));
+                "/WEB-INF/classes/obiee.properties"));
         
         descriptor.getIgnoredPaths().addAll(
             ImmutableSet.of(
