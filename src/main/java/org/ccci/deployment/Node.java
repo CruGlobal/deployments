@@ -18,6 +18,15 @@ public class Node
     }
 
     /**
+     * For usage in emails, logs, etc
+     */
+    @Override
+    public String toString()
+    {
+        return name;
+    }
+    
+    /**
      * 
      * e.g. hart-a321.net.ccci.org
      * or

@@ -1,31 +1,62 @@
 package org.ccci.deployment;
 
 import java.io.File;
+import java.util.List;
+
+import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
+import org.ccci.deployment.WebappDeployment.Packaging;
+import org.ccci.util.NotImplementedException;
+import org.ccci.util.mail.EmailAddress;
+import org.ccci.util.mail.MailMessage;
+import org.ccci.util.mail.MailMessageFactory;
+import org.ccci.util.strings.Strings;
+
+import com.google.common.base.Throwables;
 
 public class DeploymentDriver
 {
 
-    private final DeploymentConfiguration configuration;
     
+        
+    public enum ExceptionBehavior
+    {
+        PROPAGATE,
+        SUPRESS;
+    }
+
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
+        this.application = options.application;
+        this.environment = options.environment;
+        this.factory = new MailMessageFactory("smtp1.ccci.org");
     }
 
-    Logger log = Logger.getLogger(DeploymentDriver.class);
+    final Logger log = Logger.getLogger(DeploymentDriver.class);
+    
+    private final MailMessageFactory factory;
+    private final Application application;
+    private final DeploymentConfiguration configuration;
+    private String environment;
     
     public void deploy()
     {
-        RestartType restartType = configuration.getDefaultRestartType();
         //TODO: allow user to specify restartType
+        RestartType restartType = configuration.getDefaultRestartType();
 
+        //TODO: allow user to specify exceptionBehavior
+        ExceptionBehavior exceptionBehavior = ExceptionBehavior.PROPAGATE;
+        
+        WebappDeployment deployment = configuration.buildWebappDeployment();
+        sendNotificationEmail(deployment, exceptionBehavior);
+        
+        
         LocalDeploymentStorage localStorage = configuration.buildLocalDeploymentStorage();
         File deploymentLocation = localStorage.getDeploymentLocation();
         String type = deploymentLocation.isDirectory() ? "directory" : "file";
         log.info("deploying from " + type + " " + deploymentLocation);
-        WebappDeployment deployment = configuration.buildWebappDeployment();
 
         for (Node node : configuration.listNodes())
         {
@@ -78,6 +109,44 @@ public class DeploymentDriver
             //TODO: figure out rollback logic
             
             log.info("deployment completed");
+        }
+    }
+
+    private void sendNotificationEmail(WebappDeployment deployment, ExceptionBehavior emailExceptionBehavior)
+    {
+        MailMessage mailMessage = factory.createApplicationMessage();
+        
+        for (EmailAddress address : configuration.listDeploymentNotificationRecipients())
+        {
+            mailMessage.addTo(address);
+        }
+        
+        List<Node> nodes = configuration.listNodes();
+        String nodeDescription = Strings.join(nodes, ",", " and ");
+        String subject = "deploying " + application.getName() + " to " + nodeDescription;
+        
+        if (deployment.getPackaging() != Packaging.EXPLODED)
+            throw new NotImplementedException();
+        String environmentDescription = Strings.capitalsAndUnderscoresToLabel(environment) ;
+        String body = "This is an automated email notifying you that in a few seconds " + application.getName() + 
+            " will be deployed to the "+ environmentDescription + " environment on " + nodeDescription + 
+            ", and any associated appservers will be restarted.";
+        
+        mailMessage.setMessage(subject, body);
+        mailMessage.setFrom(EmailAddress.valueOf("deployments-do-not-reply@ccci.org"));
+        
+        try
+        {
+            mailMessage.sendToAll();
+        }
+        catch (MessagingException e)
+        {
+            if (emailExceptionBehavior == ExceptionBehavior.PROPAGATE)
+                throw Throwables.propagate(e);
+            else if (emailExceptionBehavior == ExceptionBehavior.SUPRESS)
+                log.error("unable to send email notification for deployment", e);
+            else
+                throw new AssertionError();
         }
     }
 

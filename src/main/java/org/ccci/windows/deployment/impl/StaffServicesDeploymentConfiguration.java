@@ -2,6 +2,7 @@ package org.ccci.windows.deployment.impl;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.BasicWebappDeployment;
@@ -15,9 +16,11 @@ import org.ccci.deployment.RestartType;
 import org.ccci.deployment.WebappControlInterface;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.WebappDeployment.Packaging;
+import org.ccci.util.mail.EmailAddress;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 public class StaffServicesDeploymentConfiguration implements DeploymentConfiguration
 {
@@ -28,22 +31,38 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
             "Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
             buildA012(),
-            true),
+            true,
+            buildProjectLead()),
         TEST(
             "Tomcat/instances/ss-inst-test", 
             "Tomcat - Staff Services - Test", 
             buildA012(),
-            true),
+            true,
+            buildProjectLead()),
         SIEBEL_TEST(
             "W$/Tomcat/instances/ss-inst-siebel", 
             "Tomcat - Staff Services - Siebel", 
             buildA321(),
-            false),
+            false,
+            buildProjectLead()),
         PRODUCTION(
             "/Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
             buildA041A042(),
-            true);
+            true,
+            buildProductionSubscribers()),
+        PROD1(
+            "/Tomcat/instances/ss-inst", 
+            "Tomcat - Staff Services", 
+            buildA041(),
+            true,
+            buildProductionSubscribers()),
+        PROD2(
+            "/Tomcat/instances/ss-inst", 
+            "Tomcat - Staff Services", 
+            buildA042(),
+            true,
+            buildProductionSubscribers());
 
         public final String serviceName;
         
@@ -53,13 +72,36 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         public final List<Node> nodes;
 
         public final boolean moveWebInfLogs;
+        
+        public Set<EmailAddress> deploymentSubscribers;
 
-        private StaffServicesEnvironment(String tomcatBasePath, String serviceName, List<Node> nodes, boolean moveWebInfLogs)
+        private StaffServicesEnvironment(String tomcatBasePath, 
+                                         String serviceName, 
+                                         List<Node> nodes, 
+                                         boolean moveWebInfLogs,
+                                         Set<EmailAddress> deploymentSubscribers)
         {
             this.tomcatBasePath = tomcatBasePath;
             this.serviceName = serviceName;
             this.nodes = nodes;
             this.moveWebInfLogs = moveWebInfLogs;
+            this.deploymentSubscribers = deploymentSubscribers;
+        }
+
+
+        private static Set<EmailAddress> buildProjectLead()
+        {
+            return ImmutableSet.of(EmailAddress.valueOf("matt.drees@ccci.org"));
+        }
+
+        private static Set<EmailAddress> buildProductionSubscribers()
+        {
+            return ImmutableSet.of(
+                EmailAddress.valueOf("matt.drees@ccci.org"),
+                EmailAddress.valueOf("ben.sisson@ccci.org"),
+                EmailAddress.valueOf("ryan.t.carlson@ccci.org"),
+                EmailAddress.valueOf("steve.bratton@ccci.org"),
+                EmailAddress.valueOf("luis.rodriguez@ccci.org"));
         }
 
         private static List<Node> buildA012()
@@ -72,25 +114,37 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
             return ImmutableList.of(new Node("a321", "hart-a321.net.ccci.org"));
         }
         
+        private static List<Node> buildA041()
+        {
+            return ImmutableList.of(new Node("a041", "hart-a041.net.ccci.org"));
+        }
+        
+        private static List<Node> buildA042()
+        {
+            return ImmutableList.of(new Node("a041", "hart-a041.net.ccci.org"));
+        }
+        
         private static List<Node> buildA041A042()
         {
-            return ImmutableList.of(
-                new Node("a041", "hart-a041.net.ccci.org"),
-                new Node("a042", "hart-a042.net.ccci.org"));
+            return ImmutableList.copyOf(
+                Iterables.concat(buildA041(), buildA042()));
         }
 
         public List<Node> listNodes()
         {
             return nodes;
         }
+
+        public Set<EmailAddress> getDeploymentSubscribers()
+        {
+            return deploymentSubscribers;
+        }
         
     }
 
-    
     private final ActiveDirectoryCredential credential;
     private final StaffServicesEnvironment environment;
     private final File sourceDirectory;
-    
     
     public StaffServicesDeploymentConfiguration(
         ActiveDirectoryCredential credential,
@@ -177,7 +231,10 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
                 "/WEB-INF/src", 
                 "/WEB-INF/test-src"));
         
-        descriptor.setLogPath("/WEB-INF/logs");
+        if (environment.moveWebInfLogs)
+        {
+            descriptor.setLogPath("/WEB-INF/logs");
+        }
         
         return descriptor;
     }
@@ -198,6 +255,12 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     public boolean supportsCautiousShutdown()
     {
         return false;
+    }
+
+    @Override
+    public Set<EmailAddress> listDeploymentNotificationRecipients()
+    {
+        return environment.getDeploymentSubscribers();
     }
 
 }

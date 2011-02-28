@@ -3,6 +3,7 @@ package org.ccci.deployment;
 import java.util.Set;
 
 import org.ccci.util.NotImplementedException;
+import org.ccci.util.strings.Strings;
 import org.ccci.windows.deployment.impl.ActiveDirectoryCredential;
 import org.ccci.windows.deployment.impl.StaffServicesDeploymentConfiguration;
 import org.ccci.windows.deployment.impl.StaffServicesDeploymentConfiguration.StaffServicesEnvironment;
@@ -66,5 +67,10 @@ public enum Application
     
     
     public abstract DeploymentConfiguration buildDeploymentConfiguration(Options options);
+
+    public String getName()
+    {
+        return Strings.capitalsAndUnderscoresToLabel(name());
+    }
 
 }

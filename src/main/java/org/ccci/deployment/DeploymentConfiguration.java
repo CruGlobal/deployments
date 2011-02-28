@@ -1,6 +1,9 @@
 package org.ccci.deployment;
 
 import java.util.List;
+import java.util.Set;
+
+import org.ccci.util.mail.EmailAddress;
 
 public interface DeploymentConfiguration
 {
@@ -20,4 +23,6 @@ public interface DeploymentConfiguration
     public List<Node> listNodes();
 
     public boolean supportsCautiousShutdown();
+
+    public Set<EmailAddress> listDeploymentNotificationRecipients();
 }
