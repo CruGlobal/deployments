@@ -39,7 +39,7 @@ public class DeploymentDriver
     private final MailMessageFactory factory;
     private final Application application;
     private final DeploymentConfiguration configuration;
-    private String environment;
+    private final String environment;
     
     public void deploy()
     {
