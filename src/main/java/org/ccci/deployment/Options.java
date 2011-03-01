@@ -44,4 +44,9 @@ public class Options
         description = "the Active Directory domain for the username, if this is a deployment to a windows machine", 
         required = true)
     public String domain;
+
+    @Parameter(
+        names = {"--continuousIntegrationUrl", "-c"}, 
+        description = "the url for the continuous integration server running this deployment")
+    public String continuousIntegrationUrl;
 }

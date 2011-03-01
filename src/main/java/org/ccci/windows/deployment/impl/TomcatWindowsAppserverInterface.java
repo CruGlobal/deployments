@@ -67,6 +67,18 @@ public class TomcatWindowsAppserverInterface implements AppserverInterface
                 }
             }
             
+            //wait a small amount of additional time.  It seems even if the service is stopped, the files
+            //the service uses are still locked for a short while.  I think.  
+            try
+            {
+                TimeUnit.SECONDS.sleep(2);
+            }
+            catch (InterruptedException e)
+            {
+                //TODO: think about how to handle this right
+                throw Throwables.propagate(e);
+            }
+            
         }
         catch (IOException e)
         {

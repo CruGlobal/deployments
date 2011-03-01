@@ -18,27 +18,16 @@ import org.ccci.util.logging.JuliToLog4jHandler;
 public class DeploymentTask extends Task
 {
 
-    private String environment;
-    private Application application;
-    private File sourceDirectory;
-    private String username;
-    private String password;
-    private String domain;
 
+    private final Options options = new Options();
+    
+    
     @Override
     public void execute()
     {
-        require(application, "application");
-        require(environment, "environment");
-        
-        Options options = new Options();
-        options.application = application;
-        options.environment = environment;
-        options.username = username;
-        options.password = password;
-        options.domain = domain;
-        options.sourceDirectory = sourceDirectory;
-        
+        require(options.application, "application");
+        require(options.environment, "environment");
+
         setUpLogging();
         
         DeploymentDriver driver;
@@ -86,14 +75,14 @@ public class DeploymentTask extends Task
     
     public void setEnvironment(String environment)
     {
-        this.environment = environment;
+        options.environment = environment;
     }
     
     public void setApplication(String application)
     {
         try
         {
-            this.application = Application.valueOf(application.toUpperCase().replace(" ", "_"));
+            options.application = Application.valueOf(application.toUpperCase().replace(" ", "_"));
         }
         catch (IllegalArgumentException e)
         {
@@ -103,22 +92,27 @@ public class DeploymentTask extends Task
     
     public void setSourceDirectory(File sourceDirectory)
     {
-        this.sourceDirectory = sourceDirectory;
+        options.sourceDirectory = sourceDirectory;
     }
 
     public void setUsername(String username)
     {
-        this.username = username;
+        options.username = username;
     }
 
     public void setPassword(String password)
     {
-        this.password = password;
+        options.password = password;
     }
 
     public void setDomain(String domain)
     {
-        this.domain = domain;
+        options.domain = domain;
+    }
+    
+    public void setContinuousIntegrationUrl(String continuousIntegrationUrl)
+    {
+        options.continuousIntegrationUrl = continuousIntegrationUrl;
     }
     
 }

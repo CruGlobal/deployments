@@ -12,6 +12,7 @@
       domain="${domain}"
       password="${password}"
       sourceDirectory="${sourceDirectory}"
+      continuousIntegrationUrl="http://google.com"
     />
   </target>
   

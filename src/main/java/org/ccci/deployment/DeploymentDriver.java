@@ -18,19 +18,19 @@ import com.google.common.base.Throwables;
 public class DeploymentDriver
 {
 
-    
-        
     public enum ExceptionBehavior
     {
         PROPAGATE,
         SUPRESS;
     }
 
+
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
         this.application = options.application;
         this.environment = options.environment;
+        this.continuousIntegrationUrl = options.continuousIntegrationUrl;
         this.factory = new MailMessageFactory("smtp1.ccci.org");
     }
 
@@ -40,6 +40,8 @@ public class DeploymentDriver
     private final Application application;
     private final DeploymentConfiguration configuration;
     private final String environment;
+    private final String continuousIntegrationUrl;
+    
     
     public void deploy()
     {
@@ -50,7 +52,7 @@ public class DeploymentDriver
         ExceptionBehavior exceptionBehavior = ExceptionBehavior.PROPAGATE;
         
         WebappDeployment deployment = configuration.buildWebappDeployment();
-        sendNotificationEmail(deployment, exceptionBehavior);
+        sendNotificationEmail(deployment, exceptionBehavior, continuousIntegrationUrl);
         
         
         LocalDeploymentStorage localStorage = configuration.buildLocalDeploymentStorage();
@@ -112,7 +114,10 @@ public class DeploymentDriver
         }
     }
 
-    private void sendNotificationEmail(WebappDeployment deployment, ExceptionBehavior emailExceptionBehavior)
+    private void sendNotificationEmail(
+        WebappDeployment deployment, 
+        ExceptionBehavior emailExceptionBehavior,
+        String continuousIntegrationUrl)
     {
         MailMessage mailMessage = factory.createApplicationMessage();
         
@@ -131,6 +136,13 @@ public class DeploymentDriver
         String body = "This is an automated email notifying you that in a few seconds " + application.getName() + 
             " will be deployed to the "+ environmentDescription + " environment on " + nodeDescription + 
             ", and any associated appservers will be restarted.";
+        
+        if (continuousIntegrationUrl != null)
+        {
+            body += "\r\n" +
+            "For more information, visit " +
+            continuousIntegrationUrl;
+        }
         
         mailMessage.setMessage(subject, body);
         mailMessage.setFrom(EmailAddress.valueOf("deployments-do-not-reply@ccci.org"));
