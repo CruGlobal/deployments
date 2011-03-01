@@ -14,6 +14,7 @@ import org.ccci.deployment.DeploymentDriver;
 import org.ccci.deployment.Application;
 import org.ccci.deployment.Options;
 import org.ccci.util.logging.JuliToLog4jHandler;
+import org.ccci.util.strings.Strings;
 
 public class DeploymentTask extends Task
 {
@@ -112,7 +113,8 @@ public class DeploymentTask extends Task
     
     public void setContinuousIntegrationUrl(String continuousIntegrationUrl)
     {
-        options.continuousIntegrationUrl = continuousIntegrationUrl;
+        if (!Strings.isEmpty(continuousIntegrationUrl))
+            options.continuousIntegrationUrl = continuousIntegrationUrl;
     }
     
 }
