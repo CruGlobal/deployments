@@ -5,7 +5,7 @@ public interface WebappControlInterface
 
     public void disableForUpgrade();
     
-    public void validateNewDeploymentActive();
+    public void verifyNewDeploymentActive();
     
     public Version getCurrentVersion();
     

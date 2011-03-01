@@ -32,37 +32,43 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
             "Tomcat - Staff Services", 
             buildA012(),
             true,
-            buildProjectLead()),
+            buildProjectLead(),
+            8180),
         TEST(
             "Tomcat/instances/ss-inst-test", 
             "Tomcat - Staff Services - Test", 
             buildA012(),
             true,
-            buildProjectLead()),
+            buildProjectLead(),
+            9180),
         SIEBEL_TEST(
             "W$/Tomcat/instances/ss-inst-siebel", 
             "Tomcat - Staff Services - Siebel", 
             buildA321(),
             false,
-            buildProjectLead()),
+            buildProjectLead(),
+            9380),
         PRODUCTION(
             "/Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
             buildA041A042(),
             true,
-            buildProductionSubscribers()),
+            buildProductionSubscribers(),
+            8180),
         PROD1(
             "/Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
             buildA041(),
             true,
-            buildProductionSubscribers()),
+            buildProductionSubscribers(),
+            8180),
         PROD2(
             "/Tomcat/instances/ss-inst", 
             "Tomcat - Staff Services", 
             buildA042(),
             true,
-            buildProductionSubscribers());
+            buildProductionSubscribers(),
+            8180);
 
         public final String serviceName;
         
@@ -75,17 +81,22 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         
         public Set<EmailAddress> deploymentSubscribers;
 
-        private StaffServicesEnvironment(String tomcatBasePath, 
-                                         String serviceName, 
-                                         List<Node> nodes, 
-                                         boolean moveWebInfLogs,
-                                         Set<EmailAddress> deploymentSubscribers)
+        public final int port;
+        
+        private StaffServicesEnvironment(
+             String tomcatBasePath, 
+             String serviceName, 
+             List<Node> nodes, 
+             boolean moveWebInfLogs,
+             Set<EmailAddress> deploymentSubscribers,
+             int port)
         {
             this.tomcatBasePath = tomcatBasePath;
             this.serviceName = serviceName;
             this.nodes = nodes;
             this.moveWebInfLogs = moveWebInfLogs;
             this.deploymentSubscribers = deploymentSubscribers;
+            this.port = port;
         }
 
 
@@ -189,9 +200,9 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     }
 
     @Override
-    public WebappControlInterface buildWebappControlInterface()
+    public WebappControlInterface buildWebappControlInterface(Node node)
     {
-        return new StaffServicesWebappControlInterface();
+        return new StaffServicesWebappControlInterface(node.getHostname(), environment.port);
     }
 
     @Override

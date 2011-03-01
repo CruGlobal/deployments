@@ -14,7 +14,7 @@ public interface DeploymentConfiguration
     
     public LocalDeploymentStorage buildLocalDeploymentStorage();
     
-    public WebappControlInterface buildWebappControlInterface();
+    public WebappControlInterface buildWebappControlInterface(Node node);
     
     public WebappDeployment buildWebappDeployment();
     

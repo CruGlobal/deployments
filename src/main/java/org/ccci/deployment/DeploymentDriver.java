@@ -69,9 +69,9 @@ public class DeploymentDriver
             log.info("transferring new webapp to server");
             transferInterface.transferNewDeploymentToServer(deployment, localStorage);
             
+            WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
             if (configuration.supportsCautiousShutdown())
             {
-                WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface();
                 log.info("disabling app");
                 webappControlInterface.disableForUpgrade();
                 //TODO: wait for for load balancer to stop sending requests
@@ -104,8 +104,9 @@ public class DeploymentDriver
                 appserverInterface.startApplication(deployment);
             }
             
-            WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface();
-            webappControlInterface.validateNewDeploymentActive();
+            log.info("verifying that newly deployed webapp is serving requests");
+            webappControlInterface.verifyNewDeploymentActive();
+            log.info("verified");
 
 
             //TODO: figure out rollback logic
