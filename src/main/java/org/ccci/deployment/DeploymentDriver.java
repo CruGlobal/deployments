@@ -2,6 +2,7 @@ package org.ccci.deployment;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 
@@ -14,6 +15,7 @@ import org.ccci.util.mail.MailMessageFactory;
 import org.ccci.util.strings.Strings;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 public class DeploymentDriver
 {
@@ -60,14 +62,26 @@ public class DeploymentDriver
         String type = deploymentLocation.isDirectory() ? "directory" : "file";
         log.info("deploying from " + type + " " + deploymentLocation);
 
+        
+        List<DeploymentTransferInterface> transferInterfaces = Lists.newArrayList();
+        
         for (Node node : configuration.listNodes())
         {
-            log.info("beginning deployment process for " + node.getName());
-            //TODO: do this for both nodes, before transferring files at all
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
+            transferInterfaces.add(transferInterface);
             
-            log.info("transferring new webapp to server");
+            log.info("transferring new webapp to " + node.getName());
             transferInterface.transferNewDeploymentToServer(deployment, localStorage);
+        }
+        
+        boolean first = true;
+        for (Node node : configuration.listNodes())
+        {
+            waitIfNecessary(first);
+            first = false;
+            
+            log.info("executing restart on " + node.getName());
+            DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
             
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
             if (configuration.supportsCautiousShutdown())
@@ -77,7 +91,6 @@ public class DeploymentDriver
                 //TODO: wait for for load balancer to stop sending requests
             }
             AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
-            
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
@@ -108,10 +121,32 @@ public class DeploymentDriver
             webappControlInterface.verifyNewDeploymentActive();
             log.info("verified");
 
+            log.info("deployment completed on " + node.getName());
+        }
+        
+        for (DeploymentTransferInterface transferInterface : transferInterfaces)
+        {
+            transferInterface.close();
+        }
+        
 
-            //TODO: figure out rollback logic
-            
-            log.info("deployment completed");
+        log.info("deployment process completed");
+    }
+
+    private void waitIfNecessary(boolean first)
+    {
+        int pauseTime = 10;
+        if (!first)
+        {
+            log.info("waiting " + pauseTime + " seconds before restarting next node");
+            try
+            {
+                TimeUnit.SECONDS.sleep(pauseTime);
+            }
+            catch (InterruptedException e)
+            {
+                throw Throwables.propagate(e);
+            }
         }
     }
 
