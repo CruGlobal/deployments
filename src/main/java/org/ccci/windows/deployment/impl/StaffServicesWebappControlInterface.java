@@ -3,7 +3,7 @@ package org.ccci.windows.deployment.impl;
 import org.ccci.deployment.Version;
 import org.ccci.deployment.WebappControlInterface;
 
-public class NoOpWebappControlInterface implements WebappControlInterface
+public class StaffServicesWebappControlInterface implements WebappControlInterface
 {
 
     @Override
@@ -12,8 +12,9 @@ public class NoOpWebappControlInterface implements WebappControlInterface
     }
 
     @Override
-    public void enableForService()
+    public void validateNewDeploymentActive()
     {
+        
     }
 
     @Override

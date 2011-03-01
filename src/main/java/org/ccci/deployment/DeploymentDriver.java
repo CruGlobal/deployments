@@ -105,7 +105,7 @@ public class DeploymentDriver
             }
             
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface();
-            webappControlInterface.enableForService();
+            webappControlInterface.validateNewDeploymentActive();
 
 
             //TODO: figure out rollback logic

@@ -121,7 +121,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         
         private static List<Node> buildA042()
         {
-            return ImmutableList.of(new Node("a041", "hart-a041.net.ccci.org"));
+            return ImmutableList.of(new Node("a042", "hart-a042.net.ccci.org"));
         }
         
         private static List<Node> buildA041A042()
@@ -191,7 +191,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     @Override
     public WebappControlInterface buildWebappControlInterface()
     {
-        return new NoOpWebappControlInterface();
+        return new StaffServicesWebappControlInterface();
     }
 
     @Override
