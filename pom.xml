@@ -6,6 +6,41 @@
   <name>Webapp Deployment Tools</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  
+ 
+ 
+    
+  <repositories>
+    <repository>
+      <id>ccci-libs-releases</id>
+      <name>Libraries (Full Releases)</name>
+      <url>http://arkham.ccci.org/artifactory/libs-releases/</url>
+    </repository>
+  </repositories>
+  
+  <ciManagement>
+    <system>Bamboo</system>
+  </ciManagement>
+  
+  <scm>
+    <connection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/</connection>
+    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/</developerConnection>
+  </scm>
+      
+  <distributionManagement>
+    <repository>
+      <id>artifacts.ccci.org-releases</id>
+      <name>artifacts.ccci.org-releases</name>
+      <url>http://arkham.ccci.org:80/artifactory/libs-releases-local</url>
+    </repository>
+  
+    <snapshotRepository>
+      <id>artifacts.ccci.org-snapshots</id>
+      <name>artifacts.ccci.org-snapshots</name>
+      <url>http://arkham.ccci.org:80/artifactory/libs-snapshots-local</url>
+    </snapshotRepository>
+  </distributionManagement>
+        
+ 
   <build>
     <plugins>
       <plugin>
