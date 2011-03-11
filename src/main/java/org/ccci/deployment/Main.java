@@ -9,21 +9,13 @@ import java.util.logging.Logger;
 import org.ccci.util.ProgramFailureException;
 import org.ccci.util.logging.JuliToLog4jHandler;
 
-import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 public class Main
 {
     
-    public static class SystemConveter implements IStringConverter<Application>
-    {
-        @Override
-        public Application convert(String string)
-        {
-            return Application.valueOf(string.toUpperCase());
-        }
-    }
+    static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Main.class);
     
     public static void main(String[] args)
     {
@@ -40,6 +32,15 @@ public class Main
             {
                 throw new ProgramFailureException(e.getMessage(), e);
             }
+            try
+            {
+                options.initializeDefaults();
+            }
+            catch (IllegalStateException e)
+            {
+                throw new ProgramFailureException(e.getMessage(), e);
+            }
+            
             DeploymentDriver driver;
             try
             {
@@ -54,6 +55,7 @@ public class Main
         catch (ProgramFailureException e)
         {
             System.err.println(e.getMessage());
+            log.debug("full stacktrace:" , e);
             System.exit(1);
         }
     }

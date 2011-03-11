@@ -1,19 +1,77 @@
 package org.ccci.deployment;
 
 import java.io.File;
+import java.util.ServiceLoader;
 
-import org.ccci.deployment.Main.SystemConveter;
-
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
+import com.google.common.base.Preconditions;
 
 public class Options
 {
+
+    public static class ApplicationConverter implements IStringConverter<Application>
+    {
+        @Override
+        public Application convert(String code)
+        {
+            ServiceLoader<Application> loader = ServiceLoader.load(Application.class);
+            
+            for (Application app : loader)
+            {
+                if (applicationNamed(app, code))
+                {
+                    return app;
+                }
+            }
+            throw new IllegalArgumentException(String.format(
+                "no application named %s is on classpath", 
+                code));
+        }
+        
+        private boolean applicationNamed(Application app, String code)
+        {
+            return app.getName().toUpperCase().equals(code.toUpperCase().replace('_', ' '));
+        }
+        
+    }
+
+    public void initializeDefaults()
+    {
+        if (application == null)
+            loadDefaultApplication();
+    }
+    
+    private void loadDefaultApplication()
+    {
+        ServiceLoader<Application> loader = ServiceLoader.load(Application.class);
+    
+        Application defaultApp = null;
+        for (Application app : loader)
+        {
+            if (app.isDefault())
+            {
+                Preconditions.checkState(
+                    defaultApp == null, 
+                    "two default applications on classpath: %s and %s", 
+                    defaultApp,
+                    app);
+                defaultApp = app;
+            }
+        }
+        Preconditions.checkState(
+            defaultApp != null,
+            "no default application is on classpath", 
+            defaultApp);
+        
+        application = defaultApp;
+    }
     
     @Parameter(
         names = {"--application", "-a"}, 
-        description = "which web application to deploy", 
-        converter = SystemConveter.class, 
-        required = true)
+        description = "which web application to deploy.  Optional if a default application is on the classpath.", 
+        converter = ApplicationConverter.class, 
+        required = false)
     public Application application;
     
     @Parameter(

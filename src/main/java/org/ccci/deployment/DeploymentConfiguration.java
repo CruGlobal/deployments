@@ -5,6 +5,11 @@ import java.util.Set;
 
 import org.ccci.util.mail.EmailAddress;
 
+/**
+ * This is conceptually similar to {@link Application}.  These might be merged.
+ * 
+ * @author Matt Drees
+ */
 public interface DeploymentConfiguration
 {
 

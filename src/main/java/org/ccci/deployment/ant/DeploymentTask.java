@@ -1,4 +1,4 @@
-package org.ccci.ant;
+package org.ccci.deployment.ant;
 
 import java.io.File;
 import java.util.logging.Handler;
@@ -6,12 +6,10 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
-import org.ccci.deployment.Application;
 import org.ccci.deployment.Options;
 import org.ccci.util.logging.JuliToLog4jHandler;
 import org.ccci.util.strings.Strings;
@@ -19,17 +17,16 @@ import org.ccci.util.strings.Strings;
 public class DeploymentTask extends Task
 {
 
-
     private final Options options = new Options();
-    
     
     @Override
     public void execute()
     {
-        require(options.application, "application");
-        require(options.environment, "environment");
-
         setUpLogging();
+        
+        require(options.environment, "environment");
+        
+        options.initializeDefaults();
         
         DeploymentDriver driver;
         try
@@ -83,7 +80,7 @@ public class DeploymentTask extends Task
     {
         try
         {
-            options.application = Application.valueOf(application.toUpperCase().replace(" ", "_"));
+            options.application = new Options.ApplicationConverter().convert(application);
         }
         catch (IllegalArgumentException e)
         {

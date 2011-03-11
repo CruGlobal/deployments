@@ -30,7 +30,7 @@ public class DeploymentDriver
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
-        this.application = options.application;
+        this.staffServicesApplication = options.application;
         this.environment = options.environment;
         this.continuousIntegrationUrl = options.continuousIntegrationUrl;
         this.factory = new MailMessageFactory("smtp1.ccci.org");
@@ -39,7 +39,7 @@ public class DeploymentDriver
     final Logger log = Logger.getLogger(DeploymentDriver.class);
     
     private final MailMessageFactory factory;
-    private final Application application;
+    private final Application staffServicesApplication;
     private final DeploymentConfiguration configuration;
     private final String environment;
     private final String continuousIntegrationUrl;
@@ -164,12 +164,12 @@ public class DeploymentDriver
         
         List<Node> nodes = configuration.listNodes();
         String nodeDescription = Strings.join(nodes, ",", " and ");
-        String subject = "deploying " + application.getName() + " to " + nodeDescription;
+        String subject = "deploying " + staffServicesApplication.getName() + " to " + nodeDescription;
         
         if (deployment.getPackaging() != Packaging.EXPLODED)
             throw new NotImplementedException();
         String environmentDescription = Strings.capitalsAndUnderscoresToLabel(environment) ;
-        String body = "This is an automated email notifying you that in a few seconds " + application.getName() + 
+        String body = "This is an automated email notifying you that in a few seconds " + staffServicesApplication.getName() + 
             " will be deployed to the "+ environmentDescription + " environment on " + nodeDescription + 
             ", and any associated appservers will be restarted.";
         

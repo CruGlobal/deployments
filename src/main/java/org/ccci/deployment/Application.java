@@ -1,76 +1,32 @@
 package org.ccci.deployment;
 
-import java.util.Set;
+import java.util.ServiceLoader;
 
-import org.ccci.util.NotImplementedException;
-import org.ccci.util.strings.Strings;
-import org.ccci.windows.deployment.impl.ActiveDirectoryCredential;
-import org.ccci.windows.deployment.impl.StaffServicesDeploymentConfiguration;
-import org.ccci.windows.deployment.impl.StaffServicesDeploymentConfiguration.StaffServicesEnvironment;
-import org.testng.v6.Sets;
-
-public enum Application
+/**
+ * Implementations of {@link Application} will be loaded via a {@link ServiceLoader}, so should
+ * have a public no-argument constructor and should have a corresponding META-INF/services/org.ccci.deployment.Application
+ * file on the classpath whose contents is the fully-qualified classname of the implementation.
+ * 
+ * @author Matt Drees
+ */
+public interface Application
 {
 
-    STAFF_SERVICES {
-        @Override
-        public DeploymentConfiguration buildDeploymentConfiguration(Options options)
-        {
-            StaffServicesEnvironment staffServicesEnvironment;
-            try
-            {
-                staffServicesEnvironment = StaffServicesEnvironment.valueOf(options.environment.toUpperCase());
-            }
-            catch (IllegalArgumentException e)
-            {
-                Set<String> possibilities = Sets.newHashSet();
-                for (StaffServicesEnvironment possibility : StaffServicesEnvironment.values())
-                {
-                    possibilities.add(possibility.toString().toLowerCase());
-                }
-                throw new InvalidEnvironmentException(options.environment, possibilities);
-            }
-            
-            require(options.username, "username");
-            require(options.password, "password");
-            require(options.sourceDirectory, "sourceDirectory");
-            if (options.domain == null)
-                options.domain = "NET";
-            
-            ActiveDirectoryCredential credential = new ActiveDirectoryCredential(
-                options.domain, 
-                options.password, 
-                options.username);
-            
-            return new StaffServicesDeploymentConfiguration(
-                credential, 
-                staffServicesEnvironment,
-                options.sourceDirectory);
-        }
+    /**
+     * Responsible for building a DeploymentConfiguration that will drive the deployment process.
+     * @throws ConfigurationException if this application deployment cannot be configured with the given options
+     */
+    DeploymentConfiguration buildDeploymentConfiguration(Options options);
 
-        private void require(Object parameter, String parameterName)
-        {
-            if (parameter == null)
-            {
-                throw new MissingParameterException(parameterName);
-            }
-        }
-    },
-    
-    CREDIT_CARD_PROCESSING {
-        @Override
-        public DeploymentConfiguration buildDeploymentConfiguration(Options options)
-        {
-            throw new NotImplementedException();
-        }
-    };
-    
-    
-    public abstract DeploymentConfiguration buildDeploymentConfiguration(Options options);
+    /**
+     * Returns the name of this application.  This serves as the name a user should specify when running
+     * the deployer and as a label displayed in messages.
+     */
+    String getName();
 
-    public String getName()
-    {
-        return Strings.capitalsAndUnderscoresToLabel(name());
-    }
+    /**
+     * If true, then this application will be selected for deployment when the user does not specify one
+     */
+    boolean isDefault();
 
 }
