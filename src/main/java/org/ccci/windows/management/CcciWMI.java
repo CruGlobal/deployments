@@ -1,4 +1,4 @@
-package org.ccci.wmi;
+package org.ccci.windows.management;
 
 /*
  * The MIT License

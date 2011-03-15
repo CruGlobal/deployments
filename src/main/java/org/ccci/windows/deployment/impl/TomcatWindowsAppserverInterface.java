@@ -7,7 +7,7 @@ import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.util.NotImplementedException;
-import org.ccci.wmi.RemoteServiceControl;
+import org.ccci.windows.management.RemoteServiceControl;
 import org.jinterop.dcom.common.IJIAuthInfo;
 import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
 import org.jinterop.dcom.common.JIException;

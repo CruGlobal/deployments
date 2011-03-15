@@ -1,11 +1,11 @@
-package org.ccci.wmi;
+package org.ccci.windows.management;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.ccci.winreg.WindowsRegistryService;
+import org.ccci.windows.registry.WindowsRegistryService;
 import org.jinterop.dcom.common.IJIAuthInfo;
 import org.jinterop.dcom.common.JIException;
 import org.jinterop.dcom.core.JISession;

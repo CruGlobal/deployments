@@ -1,4 +1,4 @@
-package org.ccci.wmi;
+package org.ccci.windows.management;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;

@@ -1,4 +1,4 @@
-package org.ccci.winreg;
+package org.ccci.windows.registry;
 
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
