@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
-import org.ccci.deployment.WebappDeployment.Packaging;
-import org.ccci.util.NotImplementedException;
 import org.ccci.util.mail.EmailAddress;
 import org.ccci.util.mail.MailMessage;
 import org.ccci.util.mail.MailMessageFactory;
@@ -30,28 +28,32 @@ public class DeploymentDriver
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
-        this.staffServicesApplication = options.application;
+        this.application = options.application;
         this.environment = options.environment;
         this.continuousIntegrationUrl = options.continuousIntegrationUrl;
         this.factory = new MailMessageFactory("smtp1.ccci.org");
+        this.restartType = options.restartType;
     }
 
     final Logger log = Logger.getLogger(DeploymentDriver.class);
     
     private final MailMessageFactory factory;
-    private final Application staffServicesApplication;
+    private final Application application;
     private final DeploymentConfiguration configuration;
     private final String environment;
     private final String continuousIntegrationUrl;
+
+    private RestartType restartType;
     
+
+    //TODO: allow user to specify exceptionBehavior
+    private ExceptionBehavior exceptionBehavior = ExceptionBehavior.PROPAGATE;
     
     public void deploy()
     {
-        //TODO: allow user to specify restartType
-        RestartType restartType = configuration.getDefaultRestartType();
+        if (restartType == null)
+            restartType = configuration.getDefaultRestartType();
 
-        //TODO: allow user to specify exceptionBehavior
-        ExceptionBehavior exceptionBehavior = ExceptionBehavior.PROPAGATE;
         
         WebappDeployment deployment = configuration.buildWebappDeployment();
         sendNotificationEmail(deployment, exceptionBehavior, continuousIntegrationUrl);
@@ -64,7 +66,25 @@ public class DeploymentDriver
 
         
         List<DeploymentTransferInterface> transferInterfaces = Lists.newArrayList();
-        
+        List<AppserverInterface> appserverInterfaces = Lists.newArrayList();
+        try
+        {
+            deployToEachNode(deployment, localStorage, transferInterfaces, appserverInterfaces);
+        }
+        finally
+        {
+            configuration.closeResources();
+        }
+
+        log.info("deployment process completed");
+    }
+
+    private void deployToEachNode(
+          WebappDeployment deployment, 
+          LocalDeploymentStorage localStorage,
+          List<DeploymentTransferInterface> transferInterfaces, 
+          List<AppserverInterface> appserverInterfaces)
+    {
         for (Node node : configuration.listNodes())
         {
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
@@ -86,11 +106,10 @@ public class DeploymentDriver
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
             if (configuration.supportsCautiousShutdown())
             {
-                log.info("disabling app");
-                webappControlInterface.disableForUpgrade();
-                //TODO: wait for for load balancer to stop sending requests
+                removeNodeFromLoadbalancerService(webappControlInterface, node);
             }
             AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
+            appserverInterfaces.add(appserverInterface);
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
@@ -123,14 +142,45 @@ public class DeploymentDriver
 
             log.info("deployment completed on " + node.getName());
         }
+    }
+
+    /*
+     *  Informs the load balancer to stop sending requests to this node
+     */
+    private void removeNodeFromLoadbalancerService(WebappControlInterface webappControlInterface, Node restartingNode)
+    {
+        log.info("disabling app");
+        webappControlInterface.disableForUpgrade();
+        //TODO: wait for for load balancer to stop sending requests
         
-        for (DeploymentTransferInterface transferInterface : transferInterfaces)
+        LoadbalancerInterface loadbalancerInterface = configuration.buildLoadBalancerInterface();
+        
+        int timeLimit = 30;
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeLimit);
+        
+        while (true)
         {
-            transferInterface.close();
+            Node activeNode = loadbalancerInterface.getActiveNode();
+            if (! activeNode.equals(restartingNode))
+            {
+                return;
+            }
+            else
+            {
+                if (System.currentTimeMillis() > deadline)
+                    throw new RuntimeException("load balancer did not remove " + activeNode + 
+                        " from service within " + timeLimit + " seconds");
+                try
+                {
+                    TimeUnit.SECONDS.sleep(1);
+                }
+                catch (InterruptedException e)
+                {
+                    throw Throwables.propagate(e);
+                }
+            }
         }
         
-
-        log.info("deployment process completed");
     }
 
     private void waitIfNecessary(boolean first)
@@ -164,14 +214,13 @@ public class DeploymentDriver
         
         List<Node> nodes = configuration.listNodes();
         String nodeDescription = Strings.join(nodes, ",", " and ");
-        String subject = "deploying " + staffServicesApplication.getName() + " to " + nodeDescription;
+        String subject = "deploying " + application.getName() + " to " + nodeDescription;
         
-        if (deployment.getPackaging() != Packaging.EXPLODED)
-            throw new NotImplementedException();
         String environmentDescription = Strings.capitalsAndUnderscoresToLabel(environment) ;
-        String body = "This is an automated email notifying you that in a few seconds " + staffServicesApplication.getName() + 
+        String body = "This is an automated email notifying you that in a few seconds " + application.getName() + 
             " will be deployed to the "+ environmentDescription + " environment on " + nodeDescription + 
-            ", and any associated appservers will be restarted.";
+            (restartType == RestartType.FULL_PROCESS_RESTART ? ", and any associated appservers will be restarted" : "") +
+            ".";
         
         if (continuousIntegrationUrl != null)
         {

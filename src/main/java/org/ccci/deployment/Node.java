@@ -1,5 +1,14 @@
 package org.ccci.deployment;
 
+/**
+ * Represents a host that an application can be deployed to.
+ * 
+ * Nodes are usable as keys in maps, but only implement {@link #equals(Object)} using
+ * object identity, so deployment configurations should take care to return the same list of nodes from
+ * {@link DeploymentConfiguration#listNodes()}
+ * 
+ * @author Matt Drees
+ */
 public class Node
 {
     

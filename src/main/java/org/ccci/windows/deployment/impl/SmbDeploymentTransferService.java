@@ -278,11 +278,6 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
 
 
     @Override
-    public void close()
-    {
-    }
-
-    @Override
     public void rollbackCurrentDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment)
     {
         try
@@ -321,6 +316,5 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
             throw Throwables.propagate(e);
         }
     }
-    
 
 }

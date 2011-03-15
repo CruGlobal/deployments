@@ -21,7 +21,7 @@ public interface WebappDeployment
     
     /**
      * The remote name of the deployment.
-     * The same naming conveniong as {@link #getName()} applies.
+     * The same naming convention as {@link #getName()} applies.
      */
     public String getDeployedWarName();
     

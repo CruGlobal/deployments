@@ -25,9 +25,17 @@ public interface DeploymentConfiguration
     
     public RestartType getDefaultRestartType();
 
+    /**
+     * It's important to return a list of the *same* nodes, since they are used as keys in
+     * maps
+     */
     public List<Node> listNodes();
 
     public boolean supportsCautiousShutdown();
 
     public Set<EmailAddress> listDeploymentNotificationRecipients();
+
+    public LoadbalancerInterface buildLoadBalancerInterface();
+
+    void closeResources();
 }

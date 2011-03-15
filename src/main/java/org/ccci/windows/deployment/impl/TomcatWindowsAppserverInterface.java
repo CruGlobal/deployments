@@ -127,9 +127,4 @@ public class TomcatWindowsAppserverInterface implements AppserverInterface
         return control;
     }
 
-    @Override
-    public void close()
-    {
-    }
-
 }

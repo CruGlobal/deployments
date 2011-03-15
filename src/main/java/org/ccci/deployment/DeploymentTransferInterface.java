@@ -31,6 +31,4 @@ public interface DeploymentTransferInterface
     public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment);
     
     public void rollbackCurrentDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment);
-    
-    public void close();
 }

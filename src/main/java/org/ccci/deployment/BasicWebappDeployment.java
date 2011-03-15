@@ -26,7 +26,7 @@ public class BasicWebappDeployment implements WebappDeployment
         this.packaging = packaging;
     }
 
-    public void setConfigFileDescriptor(DeploymentFileDescription deploymentFileDescription)
+    public void setDeploymentFileDescription(DeploymentFileDescription deploymentFileDescription)
     {
         this.deploymentFileDescription = deploymentFileDescription;
     }

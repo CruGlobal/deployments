@@ -11,5 +11,4 @@ public interface AppserverInterface
     
     public void startupServer();
     
-    public void close();
 }

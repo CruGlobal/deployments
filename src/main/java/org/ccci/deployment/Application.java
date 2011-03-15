@@ -3,6 +3,8 @@ package org.ccci.deployment;
 import java.util.ServiceLoader;
 
 /**
+ * Responsible for setting a {@link DeploymentConfiguration} for an application.
+ * 
  * Implementations of {@link Application} will be loaded via a {@link ServiceLoader}, so should
  * have a public no-argument constructor and should have a corresponding META-INF/services/org.ccci.deployment.Application
  * file on the classpath whose contents is the fully-qualified classname of the implementation.

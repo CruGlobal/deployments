@@ -26,7 +26,14 @@ public class Main
             Options options = new Options();
             try
             {
-                new JCommander(options, args);
+                JCommander jCommander = new JCommander(options);
+                if (args.length == 0 ||
+                        (args.length == 1 && args[0].equals("help")))
+                {
+                    jCommander.usage();
+                    return;
+                }
+                jCommander.parse(args);
             }
             catch (ParameterException e)
             {
@@ -57,6 +64,12 @@ public class Main
             System.err.println(e.getMessage());
             log.debug("full stacktrace:" , e);
             System.exit(1);
+        }
+        catch (RuntimeException e)
+        {
+            System.err.println("Deployment program failed");
+            e.printStackTrace();
+            System.exit(2);
         }
     }
 

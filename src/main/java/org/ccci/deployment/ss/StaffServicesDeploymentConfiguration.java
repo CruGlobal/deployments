@@ -7,6 +7,7 @@ import java.util.Set;
 import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.BasicWebappDeployment;
 import org.ccci.deployment.DeploymentFileDescription;
+import org.ccci.deployment.LoadbalancerInterface;
 import org.ccci.deployment.SpecificDirectoryDeploymentStorage;
 import org.ccci.deployment.DeploymentConfiguration;
 import org.ccci.deployment.DeploymentTransferInterface;
@@ -86,7 +87,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
         deployment.setName("ss");
         deployment.setDeployedWarName("ss");
         deployment.setPackaging(Packaging.EXPLODED);
-        deployment.setConfigFileDescriptor(getConfigFileDescriptor());
+        deployment.setDeploymentFileDescription(getConfigFileDescriptor());
         return deployment;
     }
 
@@ -146,6 +147,17 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     public Set<EmailAddress> listDeploymentNotificationRecipients()
     {
         return environment.getDeploymentSubscribers();
+    }
+
+    @Override
+    public LoadbalancerInterface buildLoadBalancerInterface()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void closeResources()
+    {
     }
 
 }

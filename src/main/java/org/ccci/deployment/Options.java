@@ -99,12 +99,34 @@ public class Options
 
     @Parameter(
         names = {"--domain", "-d"}, 
-        description = "the Active Directory domain for the username, if this is a deployment to a windows machine", 
-        required = true)
+        description = "the Active Directory domain for the username, if this is a deployment to a windows machine")
     public String domain;
 
     @Parameter(
         names = {"--continuousIntegrationUrl", "-c"}, 
         description = "the url for the continuous integration server running this deployment")
     public String continuousIntegrationUrl;
+
+    @Parameter(
+        names = {"--version", "-v"}, 
+        description = "the version of this application to deploy")
+    public String version;
+
+    @Parameter(
+        names = {"--restartType", "-r"}, 
+        description = "either FULL_PROCESS_RESTART which will restart the entire server jvm, " +
+        		"or QUICK_WEBAPP_RESTART, which will unload/load the webapp without a jvm restart.  " +
+        		"If not specified, use the application configuration's default")
+    public RestartType restartType;
+
+    @Parameter(
+        names = {"--jmxUser", "-ju"}, 
+        description = "the JMX username configured within the application server")
+    public String jmxUser;
+    
+    @Parameter(
+        names = {"--jmxPassword", "-jp"}, 
+        description = "the password associated with JMX user",
+        password = true)
+        public String jmxPassword;
 }
