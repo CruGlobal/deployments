@@ -61,8 +61,7 @@ public class Options
         }
         Preconditions.checkState(
             defaultApp != null,
-            "no default application is on classpath", 
-            defaultApp);
+            "no default application is on classpath");
         
         application = defaultApp;
     }
@@ -112,11 +111,25 @@ public class Options
         description = "the version of this application to deploy")
     public String version;
 
+    public static class RestartTypeConverter implements IStringConverter<RestartType>
+    {
+        public RestartType convert(String string)
+        {
+            for (RestartType type : RestartType.values())
+            {
+                if (type.code.equals(string))
+                    return type;
+            }
+            throw new IllegalArgumentException("invalid restart type: " + string);
+        }
+    }
+    
     @Parameter(
         names = {"--restartType", "-r"}, 
-        description = "either FULL_PROCESS_RESTART which will restart the entire server jvm, " +
-        		"or QUICK_WEBAPP_RESTART, which will unload/load the webapp without a jvm restart.  " +
-        		"If not specified, use the application configuration's default")
+        description = "either 'full' which will restart the entire server jvm, " +
+        		"or 'quick', which will unload/load the webapp without a jvm restart.  " +
+        		"If not specified, use the application configuration's default",
+		converter = RestartTypeConverter.class)
     public RestartType restartType;
 
     @Parameter(

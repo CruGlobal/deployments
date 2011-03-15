@@ -74,17 +74,24 @@ public class PageMatcher
             try
             {
                 HttpResponse response = httpclient.execute(request);
-                
-                StatusLine statusLine = response.getStatusLine();
-                if (statusLine.getStatusCode() == 200)
+                try
                 {
-                    return matchPage(response, successPattern, regularExpression, pageName);
-                }
-                else
-                    if (statusLine.getStatusCode() != 404)
-                        throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+                    StatusLine statusLine = response.getStatusLine();
+                    if (statusLine.getStatusCode() == 200)
+                    {
+                        return matchPage(response, successPattern, regularExpression, pageName);
+                    }
                     else
-                        log.debug("received 404; continuing to try to connect");
+                        if (statusLine.getStatusCode() != 404)
+                            throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+                        else
+                            log.debug("received 404; continuing to try to connect");
+                }
+                finally
+                //free up http connection
+                {
+                    response.getEntity().consumeContent();
+                }
             }
             catch (HttpHostConnectException e)
             {
