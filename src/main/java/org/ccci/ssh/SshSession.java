@@ -23,7 +23,6 @@ public class SshSession
 {
     private Logger log = Logger.getLogger(getClass());
     
-    private final int sshSocketReadTimeout = 30;
     private final int sshSocketConnectTimeout = 10;
     
     private final SshEndpoint endpoint;
