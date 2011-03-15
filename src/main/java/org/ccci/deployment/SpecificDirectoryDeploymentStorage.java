@@ -2,6 +2,8 @@ package org.ccci.deployment;
 
 import java.io.File;
 
+import org.ccci.deployment.spi.LocalDeploymentStorage;
+
 public class SpecificDirectoryDeploymentStorage implements LocalDeploymentStorage
 {
 

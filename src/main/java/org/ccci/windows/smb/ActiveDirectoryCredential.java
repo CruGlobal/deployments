@@ -1,4 +1,4 @@
-package org.ccci.windows.deployment.impl;
+package org.ccci.windows.smb;
 
 public class ActiveDirectoryCredential
 {

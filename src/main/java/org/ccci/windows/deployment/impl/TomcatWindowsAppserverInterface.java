@@ -3,11 +3,12 @@ package org.ccci.windows.deployment.impl;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
+import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.util.NotImplementedException;
 import org.ccci.windows.management.RemoteServiceControl;
+import org.ccci.windows.smb.ActiveDirectoryCredential;
 import org.jinterop.dcom.common.IJIAuthInfo;
 import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
 import org.jinterop.dcom.common.JIException;

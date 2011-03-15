@@ -4,24 +4,24 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import org.ccci.deployment.AppserverInterface;
 import org.ccci.deployment.BasicWebappDeployment;
 import org.ccci.deployment.DeploymentFileDescription;
-import org.ccci.deployment.LoadbalancerInterface;
 import org.ccci.deployment.SpecificDirectoryDeploymentStorage;
-import org.ccci.deployment.DeploymentConfiguration;
-import org.ccci.deployment.DeploymentTransferInterface;
-import org.ccci.deployment.LocalDeploymentStorage;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.RestartType;
-import org.ccci.deployment.WebappControlInterface;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.WebappDeployment.Packaging;
+import org.ccci.deployment.spi.AppserverInterface;
+import org.ccci.deployment.spi.DeploymentConfiguration;
+import org.ccci.deployment.spi.DeploymentTransferInterface;
+import org.ccci.deployment.spi.LoadbalancerInterface;
+import org.ccci.deployment.spi.LocalDeploymentStorage;
+import org.ccci.deployment.spi.WebappControlInterface;
 import org.ccci.util.mail.EmailAddress;
-import org.ccci.windows.deployment.impl.ActiveDirectoryCredential;
 import org.ccci.windows.deployment.impl.SmbDeploymentTransferService;
-import org.ccci.windows.deployment.impl.SmbEndpoint;
 import org.ccci.windows.deployment.impl.TomcatWindowsAppserverInterface;
+import org.ccci.windows.smb.ActiveDirectoryCredential;
+import org.ccci.windows.smb.SmbEndpoint;
 
 import com.google.common.collect.ImmutableSet;
 

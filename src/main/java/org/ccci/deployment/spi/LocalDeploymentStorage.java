@@ -1,4 +1,4 @@
-package org.ccci.deployment;
+package org.ccci.deployment.spi;
 
 import java.io.File;
 

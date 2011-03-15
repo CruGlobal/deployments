@@ -3,6 +3,8 @@ package org.ccci.deployment;
 import java.io.File;
 import java.util.ServiceLoader;
 
+import org.ccci.deployment.spi.Application;
+
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Preconditions;

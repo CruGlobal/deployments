@@ -2,7 +2,7 @@ package org.ccci.deployment.ss;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.Version;
-import org.ccci.deployment.WebappControlInterface;
+import org.ccci.deployment.spi.WebappControlInterface;
 import org.ccci.deployment.util.PageMatcher;
 
 public class StaffServicesWebappControlInterface implements WebappControlInterface

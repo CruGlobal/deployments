@@ -7,6 +7,13 @@ import java.util.concurrent.TimeUnit;
 import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
+import org.ccci.deployment.spi.Application;
+import org.ccci.deployment.spi.AppserverInterface;
+import org.ccci.deployment.spi.DeploymentConfiguration;
+import org.ccci.deployment.spi.DeploymentTransferInterface;
+import org.ccci.deployment.spi.LoadbalancerInterface;
+import org.ccci.deployment.spi.LocalDeploymentStorage;
+import org.ccci.deployment.spi.WebappControlInterface;
 import org.ccci.util.mail.EmailAddress;
 import org.ccci.util.mail.MailMessage;
 import org.ccci.util.mail.MailMessageFactory;

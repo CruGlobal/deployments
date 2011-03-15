@@ -2,12 +2,12 @@ package org.ccci.deployment.ss;
 
 import java.util.Set;
 
-import org.ccci.deployment.Application;
-import org.ccci.deployment.DeploymentConfiguration;
 import org.ccci.deployment.InvalidEnvironmentException;
 import org.ccci.deployment.MissingParameterException;
 import org.ccci.deployment.Options;
-import org.ccci.windows.deployment.impl.ActiveDirectoryCredential;
+import org.ccci.deployment.spi.Application;
+import org.ccci.deployment.spi.DeploymentConfiguration;
+import org.ccci.windows.smb.ActiveDirectoryCredential;
 import org.testng.v6.Sets;
 
 public class StaffServicesApplication implements Application

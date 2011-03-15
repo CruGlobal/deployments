@@ -12,10 +12,11 @@ import jcifs.smb.SmbFile;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.DeploymentFileDescription;
-import org.ccci.deployment.DeploymentTransferInterface;
-import org.ccci.deployment.LocalDeploymentStorage;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.WebappDeployment.Packaging;
+import org.ccci.deployment.spi.DeploymentTransferInterface;
+import org.ccci.deployment.spi.LocalDeploymentStorage;
+import org.ccci.windows.smb.SmbEndpoint;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;

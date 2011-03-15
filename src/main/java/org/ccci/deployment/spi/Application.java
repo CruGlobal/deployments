@@ -1,6 +1,9 @@
-package org.ccci.deployment;
+package org.ccci.deployment.spi;
 
 import java.util.ServiceLoader;
+
+import org.ccci.deployment.ConfigurationException;
+import org.ccci.deployment.Options;
 
 /**
  * Responsible for setting a {@link DeploymentConfiguration} for an application.

@@ -1,5 +1,7 @@
 package org.ccci.deployment;
 
+import org.ccci.deployment.spi.DeploymentConfiguration;
+
 /**
  * Represents a host that an application can be deployed to.
  * 

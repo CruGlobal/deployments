@@ -1,8 +1,11 @@
-package org.ccci.deployment;
+package org.ccci.deployment.spi;
 
 import java.util.List;
 import java.util.Set;
 
+import org.ccci.deployment.Node;
+import org.ccci.deployment.RestartType;
+import org.ccci.deployment.WebappDeployment;
 import org.ccci.util.mail.EmailAddress;
 
 /**
