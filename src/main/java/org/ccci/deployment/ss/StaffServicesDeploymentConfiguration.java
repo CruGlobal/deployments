@@ -17,9 +17,9 @@ import org.ccci.deployment.spi.DeploymentTransferInterface;
 import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.LocalDeploymentStorage;
 import org.ccci.deployment.spi.WebappControlInterface;
+import org.ccci.deployment.windows.SmbDeploymentTransferService;
+import org.ccci.deployment.windows.TomcatWindowsAppserverInterface;
 import org.ccci.util.mail.EmailAddress;
-import org.ccci.windows.deployment.impl.SmbDeploymentTransferService;
-import org.ccci.windows.deployment.impl.TomcatWindowsAppserverInterface;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
 import org.ccci.windows.smb.SmbEndpoint;
 

@@ -1,4 +1,4 @@
-package org.ccci.windows.deployment.impl;
+package org.ccci.deployment.windows;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
