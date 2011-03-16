@@ -170,6 +170,7 @@ public class SshSession
         Session session = connection.openSession();
         try
         {
+            session.requestDumbPTY();
             InputStream stdout = new StreamGobbler(session.getStdout());
             InputStream stderr = new StreamGobbler(session.getStderr());
             session.execCommand(command);
