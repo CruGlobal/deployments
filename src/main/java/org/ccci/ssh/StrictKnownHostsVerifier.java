@@ -7,8 +7,10 @@ import java.util.Enumeration;
 
 import ch.ethz.ssh2.KnownHosts;
 import ch.ethz.ssh2.ServerHostKeyVerifier;
+import ch.ethz.ssh2.crypto.Base64;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 
@@ -89,10 +91,36 @@ public class StrictKnownHostsVerifier implements ServerHostKeyVerifier
         }
     }
 
+    /**
+     * Whether or not this verifier's {@link KnownHosts} has a key for the given {@code hostname}
+     */
     public boolean containsHost(String hostname)
+    /*
+     * note: this implementation is rather silly, since KnownHosts doesn't easily expose which hosts it contains.
+     * Oh well. 
+     */
     {
-        // Note: this only works if the known_hosts file is guaranteed to contain only one type of key per host.  
-        // For us, this is the case.
-        return knownHosts.getPreferredServerHostkeyAlgorithmOrder(hostname) != null;
+        String garbageKey = "AAAAB3NzaC1yc2EAAAABIwAAAQEaB3DDvFKJy7QHfJVmn25MRKuqDh5bUO0yjlxE9542DMP/G8KDssA/pJGhFxe2ym1FQXf1yyBA9KXi15rlDAvkEKRlR/5UPSM82hF8QmVG8VH+Dm1EWe60Aqvlgj9cTUy7Hkkl/oDxhCIJTZqTlx0LwNHP3NYVysvcs+I+hoI/1C0VFTNKIpRloCXDxck+o4Jp8v0FLGW1PmzlrqhfoC7FV46LfTdc3LlfKWto9HmcVn1sKH7CDl/8YqMotv2OJtLBnpWPeMW7A9WqM91ldOUWB2GCKPMaX4p4vZkEdLsH5/uf18p89JIFrkB3OZPq6i3dKoS5GYiDcWxT7fO3b6EyGw==";
+        int result;
+        try
+        {
+            result = knownHosts.verifyHostkey(hostname, "ssh-rsa", Base64.decode(garbageKey.toCharArray()));
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+        
+        switch (result)
+        {
+            case KnownHosts.HOSTKEY_IS_NEW:
+                return false;
+            case KnownHosts.HOSTKEY_HAS_CHANGED:
+                return true;
+            case KnownHosts.HOSTKEY_IS_OK:
+                throw new IllegalStateException("there shouldn't actually be a host with this garbage key");
+            default:
+                throw new IllegalStateException();
+        }
     }
 }
