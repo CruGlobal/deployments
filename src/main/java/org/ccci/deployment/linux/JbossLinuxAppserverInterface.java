@@ -3,6 +3,8 @@ package org.ccci.deployment.linux;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.ssh.RemoteExecutionFailureException;
@@ -15,6 +17,8 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
     private final SshSession session;
     private final String jbossBinDir;
     private final JbossJmxCredentials jmxCredentials;
+    
+    private Logger log = Logger.getLogger(getClass());
     
     public JbossLinuxAppserverInterface(SshSession sshSession, String jbossServerPath, JbossJmxCredentials jmxCredentials)
     {
@@ -68,9 +72,9 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
         try
         {
             String output = executeTwiddle("get", "jboss.system:type=Server", "Started");
-            if (output.equals("Started=true\n"))
+            if (output.matches("Started=true\\s*"))
                 return true;
-            else if (output.equals("Started=false\n"))
+            else if (output.matches("Started=false\\s*"))
                 return false;
             else 
                 throw new IllegalStateException("unexpected output from status query: " + output);
@@ -90,32 +94,49 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
     private String executeTwiddle(String invocation, String jmxMbean, String arguments) throws IOException
     {
         return session.executeSingleCommand(
-            "sudo -u jboss /usr/local/jboss/bin/twiddle.sh --user=" + jmxCredentials.getUser() +
+            //first cd to tmp directory so creation of twiddle.log won't fail due to permissions problems,
+            //then execute twiddle.sh with appropriate parameters
+            "cd /tmp; sudo -u jboss /usr/local/jboss/bin/twiddle.sh --user=" + jmxCredentials.getUser() +
             " --password=" + jmxCredentials.getPassword() +
             " " + invocation + " \"" + jmxMbean + "\" " + arguments);
     }
 
     @Override
-    public void startupServer()
+    public void startupServer(ExceptionBehavior exceptionBehavior)
     {
         executeRemoteJbossServiceCommand("start");
         long startTime = System.currentTimeMillis();
-        while(!serviceIsRunning())
+        try
         {
-            int maxWait = 180;
-            if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
+            while(!serviceIsRunning())
             {
-                throw new RuntimeException("service not started after " + maxWait + " seconds");
+                int maxWait = 180;
+                if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
+                {
+                    throw new RuntimeException("service not started after " + maxWait + " seconds");
+                }
+                try
+                {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                }
+                catch (InterruptedException e)
+                {
+                    //TODO: think about how to handle this right
+                    throw Throwables.propagate(e);
+                }
             }
-            try
+        }
+        catch (RuntimeException e)
+        {
+            if (exceptionBehavior == ExceptionBehavior.HALT)
+                throw e;
+            else if (exceptionBehavior == ExceptionBehavior.LOG)
             {
-                TimeUnit.MILLISECONDS.sleep(100);
+                log.error("unable to determine status of server after successfully issuing start command; proceeding", e);
+                return;
             }
-            catch (InterruptedException e)
-            {
-                //TODO: think about how to handle this right
-                throw Throwables.propagate(e);
-            }
+            else
+                throw new AssertionError();
         }
     }
     

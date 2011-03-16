@@ -34,12 +34,12 @@ public class SshSessionInteractiveTest
     public void testRemoteExecution() throws IOException
     {    
         String password = readPasswordFromInput();
-        SshSession session = new SshSession(new SshEndpoint("mdrees", "harta121", password), StrictKnownHostsVerifier.loadFromClasspath());
+        SshSession session = new SshSession(new SshEndpoint("mdrees", "harta122", password), StrictKnownHostsVerifier.loadFromClasspath());
 
         session.connect();
         
 //        printOutput(session.executeSingleCommand("sudo -u jboss /usr/local/jboss/server/ccpserver/bin/jboss.sh status"));
-        printOutput(session.executeSingleCommand("sudo -u jboss /usr/local/jboss/bin/twiddle.sh --user=admin --password=admin get \"jboss.system:type=Server\" Started"));
+        printOutput(session.executeSingleCommand("cd /tmp; sudo -u jboss /usr/local/jboss/bin/twiddle.sh --user=admin --password=admin get \"jboss.system:type=Server\" Started"));
         
         session.close();
         

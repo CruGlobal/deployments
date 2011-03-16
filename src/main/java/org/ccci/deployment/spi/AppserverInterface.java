@@ -1,5 +1,6 @@
 package org.ccci.deployment.spi;
 
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.WebappDeployment;
 
 public interface AppserverInterface
@@ -11,6 +12,6 @@ public interface AppserverInterface
 
     public void shutdownServer();
     
-    public void startupServer();
+    public void startupServer(ExceptionBehavior nonfatalExceptionBehavior);
     
 }

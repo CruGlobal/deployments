@@ -72,7 +72,7 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     {
         String warFileName = getDeployedWarFileName(deployment);
         String backupPath = getBackupFilePath(warFileName);
-        String rolledBackDeploymentsPath = jbossDeploymentPath + "/rolledBackDeployments/" + warFileName;
+        String rolledBackDeploymentsPath = jbossServerPath + "/rolledBackDeployments/" + warFileName;
         
         String webappDeploymentPath = jbossDeploymentPath + "/" + warFileName;
         try

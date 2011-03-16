@@ -25,13 +25,6 @@ import com.google.common.collect.Lists;
 public class DeploymentDriver
 {
 
-    public enum ExceptionBehavior
-    {
-        PROPAGATE,
-        SUPRESS;
-    }
-
-
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
@@ -40,6 +33,7 @@ public class DeploymentDriver
         this.continuousIntegrationUrl = options.continuousIntegrationUrl;
         this.factory = new MailMessageFactory("smtp1.ccci.org");
         this.restartType = options.restartType;
+        this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
     }
 
     final Logger log = Logger.getLogger(DeploymentDriver.class);
@@ -53,8 +47,7 @@ public class DeploymentDriver
     private RestartType restartType;
     
 
-    //TODO: allow user to specify exceptionBehavior
-    private ExceptionBehavior exceptionBehavior = ExceptionBehavior.PROPAGATE;
+    private final ExceptionBehavior nonfatalExceptionBehavior;
     
     public void deploy()
     {
@@ -63,7 +56,7 @@ public class DeploymentDriver
 
         
         WebappDeployment deployment = configuration.buildWebappDeployment();
-        sendNotificationEmail(deployment, exceptionBehavior, continuousIntegrationUrl);
+        sendNotificationEmail(deployment);
         
         
         LocalDeploymentStorage localStorage = configuration.buildLocalDeploymentStorage();
@@ -113,8 +106,25 @@ public class DeploymentDriver
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
             if (configuration.supportsCautiousShutdown())
             {
-                removeNodeFromLoadbalancerService(webappControlInterface, node);
+                try
+                {
+                    removeNodeFromLoadbalancerService(webappControlInterface, node);
+                }
+                catch (RuntimeException e)
+                {
+                    if (nonfatalExceptionBehavior == ExceptionBehavior.LOG)
+                    {
+                        log.error("unable to remove " + node + " from loadbalancer service; continuing deployment", e);
+                    }
+                    else if (nonfatalExceptionBehavior == ExceptionBehavior.HALT)
+                    {
+                        throw e;
+                    }
+                    else
+                        throw new AssertionError();
+                }
             }
+            
             AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
             appserverInterfaces.add(appserverInterface);
             
@@ -129,13 +139,13 @@ public class DeploymentDriver
                 appserverInterface.stopApplication(deployment);
             }
 
-            log.info("enabling new webapp");
+            log.info("replacing old deployment with new deployment");
             transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment);
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
                 log.info("starting app server");
-                appserverInterface.startupServer();
+                appserverInterface.startupServer(nonfatalExceptionBehavior);
             }
             else
             {
@@ -158,7 +168,6 @@ public class DeploymentDriver
     {
         log.info("disabling app");
         webappControlInterface.disableForUpgrade();
-        //TODO: wait for for load balancer to stop sending requests
         
         LoadbalancerInterface loadbalancerInterface = configuration.buildLoadBalancerInterface();
         
@@ -207,10 +216,7 @@ public class DeploymentDriver
         }
     }
 
-    private void sendNotificationEmail(
-        WebappDeployment deployment, 
-        ExceptionBehavior emailExceptionBehavior,
-        String continuousIntegrationUrl)
+    private void sendNotificationEmail(WebappDeployment deployment)
     {
         MailMessage mailMessage = factory.createApplicationMessage();
         
@@ -245,9 +251,9 @@ public class DeploymentDriver
         }
         catch (MessagingException e)
         {
-            if (emailExceptionBehavior == ExceptionBehavior.PROPAGATE)
+            if (nonfatalExceptionBehavior == ExceptionBehavior.HALT)
                 throw Throwables.propagate(e);
-            else if (emailExceptionBehavior == ExceptionBehavior.SUPRESS)
+            else if (nonfatalExceptionBehavior == ExceptionBehavior.LOG)
                 log.error("unable to send email notification for deployment", e);
             else
                 throw new AssertionError();

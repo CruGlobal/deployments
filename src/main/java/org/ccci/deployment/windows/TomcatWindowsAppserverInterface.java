@@ -3,6 +3,7 @@ package org.ccci.deployment.windows;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
@@ -96,7 +97,7 @@ public class TomcatWindowsAppserverInterface implements AppserverInterface
     }
 
     @Override
-    public void startupServer()
+    public void startupServer(ExceptionBehavior exceptionBehavior)
     {
         RemoteServiceControl control = buildControl();
         

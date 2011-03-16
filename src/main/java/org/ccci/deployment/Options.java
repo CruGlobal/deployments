@@ -143,5 +143,25 @@ public class Options
         names = {"--jmxPassword", "-jp"}, 
         description = "the password associated with JMX user",
         password = true)
-        public String jmxPassword;
+    public String jmxPassword;
+
+
+    public static class ExceptionBehaviorConverter implements IStringConverter<ExceptionBehavior>
+    {
+        public ExceptionBehavior convert(String string)
+        {
+            for (ExceptionBehavior exceptionBehavior : ExceptionBehavior.values())
+            {
+                if (exceptionBehavior.toString().toLowerCase().equals(string))
+                    return exceptionBehavior;
+            }
+            throw new IllegalArgumentException("invalid restart type: " + string);
+        }
+    }
+    
+    @Parameter(
+        names = {"--nonfatalExceptionBehavior", "-eb"}, 
+        description = "whether nonfatal exceptions should cause the deployment to fail or should be logged but not halt the deployment. possible values: 'halt', 'log'.  Default is 'halt'",
+        converter = ExceptionBehaviorConverter.class)
+    public ExceptionBehavior nonfatalExceptionBehavior = ExceptionBehavior.HALT;
 }

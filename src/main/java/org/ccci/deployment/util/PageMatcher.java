@@ -52,7 +52,7 @@ public class PageMatcher
      */
     public Matcher pingUntilPageMatches(String uri, String regularExpression, String pageName, long maxWaitTime)
     {
-        log.info("requesting " + uri);
+        log.debug("requesting " + uri);
         HttpGet request = new HttpGet(uri);
         
         long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(maxWaitTime);
@@ -154,7 +154,7 @@ public class PageMatcher
 
     public Matcher matchPage(String uri, String regularExpression, String pageName, long maxWaitTime)
     {
-        log.info("requesting " + uri);
+        log.debug("requesting " + uri);
         HttpGet request = new HttpGet(uri);
         
         long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(maxWaitTime);
