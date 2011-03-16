@@ -26,22 +26,22 @@ public class SshSession
     private final int sshSocketConnectTimeout = 10;
     
     private final SshEndpoint endpoint;
+    private final  ServerHostKeyVerifier verifier;
     private Connection connection;
     
-    public SshSession(SshEndpoint endpoint)
+    public SshSession(SshEndpoint endpoint, ServerHostKeyVerifier verifier)
     {
         this.endpoint = endpoint;
+        this.verifier = verifier;
     }
     
     Charset charset = Charsets.UTF_8;
 
 
+
     public void connect() throws IOException
     {
         connection = new Connection(endpoint.getHostName());
-        
-        //TODO: evaluate if this is a problem
-        ServerHostKeyVerifier verifier = null;
         
         connection.connect(verifier, (int) TimeUnit.SECONDS.toMillis(sshSocketConnectTimeout), 0);
         boolean success = connection.authenticateWithPassword(endpoint.getUsername(), endpoint.getPassword());

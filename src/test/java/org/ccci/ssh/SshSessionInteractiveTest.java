@@ -34,7 +34,7 @@ public class SshSessionInteractiveTest
     public void testRemoteExecution() throws IOException
     {    
         String password = readPasswordFromInput();
-        SshSession session = new SshSession(new SshEndpoint("mdrees", "harta121", password));
+        SshSession session = new SshSession(new SshEndpoint("mdrees", "harta121", password), StrictKnownHostsVerifier.loadFromClasspath());
 
         session.connect();
         
