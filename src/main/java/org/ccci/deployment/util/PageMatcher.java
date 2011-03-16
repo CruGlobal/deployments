@@ -25,8 +25,6 @@ public class PageMatcher
 
     private final HttpClient httpclient;
 
-    final int maxWaitTime = 30;
-    
     public PageMatcher(HttpClient client)
     {
         this.httpclient = client;
@@ -49,9 +47,10 @@ public class PageMatcher
      * @param uri
      * @param regularExpression
      * @param pageName 
+     * @param maxWaitTime 
      * @throws RuntimeException if the page cannot be loaded and matched
      */
-    public Matcher pingUntilPageMatches(String uri, String regularExpression, String pageName)
+    public Matcher pingUntilPageMatches(String uri, String regularExpression, String pageName, long maxWaitTime)
     {
         log.info("requesting " + uri);
         HttpGet request = new HttpGet(uri);
@@ -153,7 +152,7 @@ public class PageMatcher
 
     
 
-    public Matcher matchPage(String uri, String regularExpression, String pageName)
+    public Matcher matchPage(String uri, String regularExpression, String pageName, long maxWaitTime)
     {
         log.info("requesting " + uri);
         HttpGet request = new HttpGet(uri);
