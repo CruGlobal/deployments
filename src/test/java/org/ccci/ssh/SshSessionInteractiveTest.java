@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import org.ccci.ssh.SshEndpoint;
 import org.ccci.ssh.SshSession;
+import org.ccci.util.ConsoleUtil;
 
 public class SshSessionInteractiveTest
 {
@@ -17,23 +18,9 @@ public class SshSessionInteractiveTest
         test.testRemoteExecution();
     }
 
-    private static String readPasswordFromInput() throws IOException
-    {
-        System.out.print("password: ");
-        Console console = System.console();
-        if (console == null)
-        {
-            return new BufferedReader(new InputStreamReader(System.in)).readLine();
-        }
-        else
-        {
-            return new String(console.readPassword());
-        }
-    }
-    
     public void testRemoteExecution() throws IOException
     {    
-        String password = readPasswordFromInput();
+        String password = ConsoleUtil.readPasswordFromInput();
         SshSession session = new SshSession(new SshEndpoint("mdrees", "harta122", password), StrictKnownHostsVerifier.loadFromClasspath());
 
         session.connect();
