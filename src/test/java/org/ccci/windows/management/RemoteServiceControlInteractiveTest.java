@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.ccci.util.ConsoleUtil;
 import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
 import org.jinterop.dcom.common.JIException;
-import org.testng.annotations.Test;
 
 
 public class RemoteServiceControlInteractiveTest
