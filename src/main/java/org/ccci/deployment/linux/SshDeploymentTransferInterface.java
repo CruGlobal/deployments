@@ -34,6 +34,7 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     private final String jbossServerPath;
     
     
+    //TODO: if current deployment does not exist, don't fail -- add ExceptionBehavior parameter to drive this
     //currently, do only one backup
     @Override
     public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment)
