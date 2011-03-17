@@ -13,7 +13,6 @@ public class RemoteServiceControlInteractiveTest
 
     RemoteServiceControl remoteServiceControl;
     
-    @Test
     public void restartService() throws JIException, IOException, InterruptedException
     {
         String password = ConsoleUtil.readPasswordFromInput();
