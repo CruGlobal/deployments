@@ -2,6 +2,7 @@ package org.ccci.windows.management;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -56,7 +57,16 @@ public class CcciJInteropInvocationHandler implements InvocationHandler
             {
                 proxyType = method.getReturnType();
             }
-            return replaceProxy(delegate.invoke(proxy, method, args), proxyType);
+            Object value;
+            try
+            {
+                value = delegate.invoke(proxy, method, args);
+            }
+            catch (InvocationTargetException e)
+            {
+                throw e.getCause();
+            }
+            return replaceProxy(value, proxyType);
         }
     }
 
