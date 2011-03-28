@@ -122,9 +122,14 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         {
             path = removeInitialSlash(path);
             SmbFile sourceFile = endpoint.createChildFilePath(remoteDeploymentPath, path);
-            SmbFile targetFile = endpoint.createChildFilePath(remoteTransferPath, path);
-            assert !targetFile.exists();
-            sourceFile.copyTo(targetFile);
+            if (sourceFile.exists())
+            //when introducing a new config file, the current deployment will not have it yet,
+            //so skip the copying.
+            {
+                SmbFile targetFile = endpoint.createChildFilePath(remoteTransferPath, path);
+                assert !targetFile.exists();
+                sourceFile.copyTo(targetFile);
+            }
         }
     }
 
