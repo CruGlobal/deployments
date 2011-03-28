@@ -2,12 +2,15 @@ package org.ccci.deployment;
 
 import java.io.File;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.ccci.deployment.spi.Application;
 
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 public class Options
 {
@@ -17,18 +20,39 @@ public class Options
         @Override
         public Application convert(String code)
         {
-            ServiceLoader<Application> loader = ServiceLoader.load(Application.class);
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            ClassLoader thisClassesClassloader = getClass().getClassLoader();
             
+            Set<Application> foundApplications = Sets.newHashSet();
+            findApplicationsOnClassloader(code, contextClassLoader, foundApplications);
+            if (contextClassLoader != thisClassesClassloader)
+            {
+                findApplicationsOnClassloader(code, thisClassesClassloader, foundApplications);
+            }
+            
+            Preconditions.checkArgument(!foundApplications.isEmpty(),
+                "no application named %s is on the classpath", 
+                code);
+            
+            Preconditions.checkState(foundApplications.size() <= 1,
+                "multiple applications named %s are on the classpath: %s", 
+                code,
+                foundApplications);
+            
+            return Iterables.getOnlyElement(foundApplications);
+        }
+
+        private void findApplicationsOnClassloader(String code, ClassLoader classLoader,
+                                                   Set<Application> foundApplications)
+        {
+            ServiceLoader<Application> loader = ServiceLoader.load(Application.class, classLoader);
             for (Application app : loader)
             {
                 if (applicationNamed(app, code))
                 {
-                    return app;
+                    foundApplications.add(app);
                 }
             }
-            throw new IllegalArgumentException(String.format(
-                "no application named %s is on classpath", 
-                code));
         }
         
         private boolean applicationNamed(Application app, String code)

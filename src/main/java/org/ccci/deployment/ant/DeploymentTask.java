@@ -26,7 +26,14 @@ public class DeploymentTask extends Task
         
         require(options.environment, "environment");
         
-        options.initializeDefaults();
+        try
+        {
+            options.initializeDefaults();
+        }
+        catch (IllegalStateException e)
+        {
+            throw new BuildException(e.getMessage(), e);
+        }
         
         DeploymentDriver driver;
         try
@@ -84,7 +91,7 @@ public class DeploymentTask extends Task
         }
         catch (IllegalArgumentException e)
         {
-            throw new BuildException();
+            throw new BuildException(e.getMessage());
         }
     }
     
