@@ -1,12 +1,7 @@
 package org.ccci.ssh;
 
-import java.io.BufferedReader;
-import java.io.Console;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
-import org.ccci.ssh.SshEndpoint;
-import org.ccci.ssh.SshSession;
 import org.ccci.util.ConsoleUtil;
 
 public class SshSessionInteractiveTest
