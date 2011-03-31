@@ -17,21 +17,25 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     private final Logger log = Logger.getLogger(SshDeploymentTransferInterface.class);
     
     
-    public SshDeploymentTransferInterface(SshSession session, String jbossServerPath)
+    public SshDeploymentTransferInterface(
+        SshSession session, 
+        String remoteDeploymentDirectory,
+        String remoteTransferDirectory,
+        String remoteBackupDirectory)
     {
         this.session = session;
-        this.jbossServerPath = jbossServerPath;
-        this.jbossDeploymentPath = getJbossDeploymentPath(jbossServerPath);
+        this.remoteDeploymentDirectory = remoteDeploymentDirectory;
+        this.remoteTransferDirectory = remoteTransferDirectory;
+        this.remoteBackupDirectory = remoteBackupDirectory;
     }
 
-    private String getJbossDeploymentPath(String jbossServerPath)
-    {
-        return jbossServerPath + "/deploy";
-    }
 
-    private final String jbossDeploymentPath ;
     private final SshSession session;
-    private final String jbossServerPath;
+    
+
+    private final String remoteDeploymentDirectory;
+    private final String remoteTransferDirectory;
+    private final String remoteBackupDirectory;
     
     
     //TODO: if current deployment does not exist, don't fail -- add ExceptionBehavior parameter to drive this
@@ -40,9 +44,9 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment)
     {
         String warFileName = getDeployedWarFileName(deployment);
-        String transferFilePath = "/tmp" + "/" + warFileName + ".tmp";
+        String transferFilePath = remoteTransferDirectory + "/" + warFileName + ".tmp";
         String backupPath = getBackupFilePath(warFileName);
-        String webappDeploymentPath = jbossDeploymentPath + "/" + warFileName;
+        String webappDeploymentPath = remoteDeploymentDirectory + "/" + warFileName;
         
         try
         {
@@ -65,7 +69,7 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
 
     private String getBackupFilePath(String warFileName)
     {
-        return jbossServerPath + "/backups/" + warFileName;
+        return remoteBackupDirectory + "/" + warFileName;
     }
 
     @Override
@@ -73,9 +77,9 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     {
         String warFileName = getDeployedWarFileName(deployment);
         String backupPath = getBackupFilePath(warFileName);
-        String rolledBackDeploymentsPath = jbossServerPath + "/rolledBackDeployments/" + warFileName;
+        String rolledBackDeploymentsPath = remoteBackupDirectory + "/" + warFileName + ".rolledback";
         
-        String webappDeploymentPath = jbossDeploymentPath + "/" + warFileName;
+        String webappDeploymentPath = remoteDeploymentDirectory + "/" + warFileName;
         try
         {
             session.executeSingleCommand(buildMoveCommand(webappDeploymentPath, rolledBackDeploymentsPath));

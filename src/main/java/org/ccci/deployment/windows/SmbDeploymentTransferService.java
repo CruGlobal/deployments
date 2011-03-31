@@ -37,7 +37,11 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     Logger log = Logger.getLogger(SmbEndpoint.class);
     
     
-    public SmbDeploymentTransferService(SmbEndpoint endpoint, String remoteDeploymentDirectory, String remoteTransferDirectory, String remoteBackupDirectory)
+    public SmbDeploymentTransferService(
+        SmbEndpoint endpoint, 
+        String remoteDeploymentDirectory, 
+        String remoteTransferDirectory, 
+        String remoteBackupDirectory)
     {
         this.endpoint = endpoint;
         this.remoteDeploymentDirectory = remoteDeploymentDirectory;

@@ -175,10 +175,10 @@ public class SshSession
             InputStream stderr = new StreamGobbler(session.getStderr());
             session.execCommand(command);
             
+            session.waitForCondition(ChannelCondition.EXIT_STATUS, TimeUnit.SECONDS.toMillis(1));
+            
             String output = CharStreams.toString(new InputStreamReader(stdout, Charsets.UTF_8));
             String errorOutput = CharStreams.toString(new InputStreamReader(stderr, Charsets.UTF_8));
-            
-            session.waitForCondition(ChannelCondition.EXIT_STATUS, TimeUnit.SECONDS.toMillis(1));
             
             Integer exitStatus = session.getExitStatus();
             if (exitStatus == null)
