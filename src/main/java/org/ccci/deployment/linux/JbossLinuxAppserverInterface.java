@@ -77,6 +77,8 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
                 return true;
             else if (output.matches("Started=false\\s*"))
                 return false;
+            else if (output.contains("Connection refused"))
+                return false;
             else 
                 throw new IllegalStateException("unexpected output from status query: " + output);
         }
