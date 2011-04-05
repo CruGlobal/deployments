@@ -19,6 +19,7 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
     private final JbossJmxCredentials jmxCredentials;
     
     private Logger log = Logger.getLogger(getClass());
+    private int startupWaitTime = 240;
     
     public JbossLinuxAppserverInterface(SshSession sshSession, String jbossServerPath, JbossJmxCredentials jmxCredentials)
     {
@@ -110,10 +111,9 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
         {
             while(!serviceIsRunning())
             {
-                int maxWait = 180;
-                if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
+                if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(startupWaitTime))
                 {
-                    throw new RuntimeException("service not started after " + maxWait + " seconds");
+                    throw new RuntimeException("service not started after " + startupWaitTime + " seconds");
                 }
                 try
                 {
