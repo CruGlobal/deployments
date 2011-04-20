@@ -10,6 +10,7 @@ import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -175,14 +176,23 @@ public class PageMatcher
             try
             {
                 HttpResponse response = httpclient.execute(request);
-                
-                StatusLine statusLine = response.getStatusLine();
-                if (statusLine.getStatusCode() == 200)
+                try
                 {
-                    return matchPage(response, successPattern, regularExpression, pageName);
+                    StatusLine statusLine = response.getStatusLine();
+                    if (statusLine.getStatusCode() == 200)
+                    {
+                        return matchPage(response, successPattern, regularExpression, pageName);
+                    }
+                    else
+                    {
+                        throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+                    }
                 }
-                else
-                    throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+                finally
+                //free up http connection
+                {
+                    response.getEntity().consumeContent();
+                }
             }
             catch (HttpHostConnectException e)
             {
