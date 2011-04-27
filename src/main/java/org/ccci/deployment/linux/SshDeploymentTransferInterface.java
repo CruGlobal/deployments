@@ -53,6 +53,10 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
             session.executeSingleCommand(buildMoveCommand(webappDeploymentPath, backupPath));
             try
             {
+                /* note: we can't use 'mv' here, because the jboss user won't have permission to 
+                 * remove the deployment from the transfer location (its owner is whoever is
+                 * running the deployment, not jboss)
+                 */
                 session.executeSingleCommand(buildCopyCommand(transferFilePath, webappDeploymentPath));
             }
             catch (Exception e)
@@ -60,6 +64,10 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
                 log.warn("Old deployment was backed up, but new deployment could not be deployed.  Manual recovery is needed!");
                 Throwables.propagateIfPossible(e, IOException.class);
             }
+            /* cleanup the transfer file, because future transfers may be executed by a different user
+             * who won't have permission to overwrite this transfer file
+             */
+            session.executeSingleCommand("rm " + transferFilePath);
         }
         catch (IOException e)
         {
@@ -117,7 +125,7 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
         String localFilePath = localStorage.getDeploymentLocation().getPath() + "/" + deployment.getName() + ".war";
         try
         {
-            session.sendFile(localFilePath, "/tmp", warFileName + ".tmp", "0644");
+            session.sendFile(localFilePath, "/usr/local/tmp", warFileName + ".tmp", "0644");
         }
         catch (IOException e)
         {
