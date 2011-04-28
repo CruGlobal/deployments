@@ -33,6 +33,20 @@ public enum StaffServicesEnvironment
         false,
         buildProjectLead(),
         9380),
+    STAFFWEB_REBRANDING_TEST(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA321(),
+        false,
+        buildProjectLead(),
+        9580),
+    STAFFWEB_REBRANDING_STAGE1(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA331(),
+        false,
+        buildProjectLead(),
+        9580),
     PRODUCTION(
         "/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
@@ -108,6 +122,17 @@ public enum StaffServicesEnvironment
     private static List<Node> buildA321()
     {
         return ImmutableList.of(new Node("a321", "hart-a321.net.ccci.org"));
+    }
+    
+    private static List<Node> buildA331()
+    {
+        return ImmutableList.of(new Node("a331", "hart-a331.net.ccci.org"));
+    }
+    
+    @SuppressWarnings("unused")
+    private static List<Node> buildA332()
+    {
+        return ImmutableList.of(new Node("a332", "hart-a332.net.ccci.org"));
     }
     
     private static List<Node> buildA041()
