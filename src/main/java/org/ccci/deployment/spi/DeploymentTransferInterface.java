@@ -1,5 +1,6 @@
 package org.ccci.deployment.spi;
 
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.WebappDeployment;
 
 
@@ -28,9 +29,12 @@ public interface DeploymentTransferInterface
      * so implementations should make this as quick as possible. 
      * 
      * @param deployment the deployment to be deployed
+     * @param exceptionBehavior whether to 'force' the new deployment.  If equal to {@link ExceptionBehavior#HALT}, 
+     *   fail if the current deployment cannot be backed up.  If equal to {@link ExceptionBehavior#LOG}, then
+     *   don't fail if the current deployment cannot be backed up.
      * @throws IllegalStateException if {@link #transferNewDeploymentToServer(WebappDeployment, LocalDeploymentStorage)} has not yet been called
      */
-    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment);
+    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment, ExceptionBehavior exceptionBehavior);
     
     public void rollbackCurrentDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment);
 }

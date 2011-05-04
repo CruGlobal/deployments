@@ -12,6 +12,7 @@ import jcifs.smb.SmbFile;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.DeploymentFileDescription;
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.WebappDeployment.Packaging;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
@@ -217,7 +218,7 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     }
     
     @Override
-    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment)
+    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment, ExceptionBehavior exceptionBehavior)
     {
         try
         {
@@ -227,15 +228,26 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
             moveLogFilesToNewDeploymentIfNecessary(deployment, transferPath, deploymentPath);
             try
             {
-                backupCurrentDeployment(deployment, deploymentPath);
+                try
+                {
+                    backupCurrentDeployment(deployment, deploymentPath);
+                }
+                catch (Exception e)
+                {
+                    if (exceptionBehavior == ExceptionBehavior.HALT)
+                        Throwables.propagate(e);
+                    else if (exceptionBehavior == ExceptionBehavior.LOG)
+                        log.error("Unable to back up current deployment; ignoring", e);
+                    else throw new AssertionError();
+                }
                 activateNewDeployment(transferPath, deploymentPath);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 log.warn("log files have been moved to the new deployment, " +
                 		"but an exception prevents the new deployment from activating.  " +
                 		"The logs need to manually be moved back!");
-                throw e;
+                Throwables.propagate(e);
             }
         }
         catch (IOException e)

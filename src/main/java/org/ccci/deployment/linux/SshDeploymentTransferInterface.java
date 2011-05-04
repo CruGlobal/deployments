@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.ccci.annotations.NotThreadSafe;
+import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
 import org.ccci.deployment.spi.LocalDeploymentStorage;
@@ -38,10 +39,9 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     private final String remoteBackupDirectory;
     
     
-    //TODO: if current deployment does not exist, don't fail -- add ExceptionBehavior parameter to drive this
     //currently, do only one backup
     @Override
-    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment)
+    public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment, ExceptionBehavior exceptionBehavior)
     {
         String warFileName = getDeployedWarFileName(deployment);
         String transferFilePath = remoteTransferDirectory + "/" + warFileName + ".tmp";
@@ -50,7 +50,21 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
         
         try
         {
-            session.executeSingleCommand(buildMoveCommand(webappDeploymentPath, backupPath));
+            try
+            {
+                session.executeSingleCommand(buildMoveCommand(webappDeploymentPath, backupPath));
+            }
+            catch (Exception e)
+            {
+                if (exceptionBehavior == ExceptionBehavior.HALT)
+                    Throwables.propagate(e);
+                else if (exceptionBehavior == ExceptionBehavior.LOG)
+                    log.error("unable to back up current deployment; ignoring", e);
+                else
+                    throw new AssertionError();
+            }
+            
+            
             try
             {
                 /* note: we can't use 'mv' here, because the jboss user won't have permission to 

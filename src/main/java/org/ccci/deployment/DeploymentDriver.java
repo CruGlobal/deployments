@@ -140,7 +140,7 @@ public class DeploymentDriver
             }
 
             log.info("replacing old deployment with new deployment");
-            transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment);
+            transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment, nonfatalExceptionBehavior);
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
