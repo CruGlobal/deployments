@@ -139,7 +139,7 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
         String localFilePath = localStorage.getDeploymentLocation().getPath() + "/" + deployment.getName() + ".war";
         try
         {
-            session.sendFile(localFilePath, remoteDeploymentDirectory, warFileName + ".tmp", "0644");
+            session.sendFile(localFilePath, remoteTransferDirectory, warFileName + ".tmp", "0644");
         }
         catch (IOException e)
         {
