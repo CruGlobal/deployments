@@ -165,6 +165,14 @@ public class SshSession
         }
     }
 
+    /**
+     * Executes a single command.  If the exit status is 0 (success), the output (written to stdout) is returned.
+     * Otherwise, a {@link RemoteExecutionFailureException} is thrown that contains stdout and stderr output, as well as the exit 
+     * code.
+     * 
+     * @throws RemoteExecutionFailureException if the command fails
+     * @throws IOException if the sftp transport fails
+     */
     public String executeSingleCommand(String command) throws IOException
     {
         Session session = connection.openSession();
