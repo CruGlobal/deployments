@@ -201,7 +201,7 @@ public class DeploymentDriver
 
     private void waitIfNecessary(boolean first)
     {
-        int pauseTime = 10;
+        int pauseTime = 30;
         if (!first)
         {
             log.info("waiting " + pauseTime + " seconds before restarting next node");
