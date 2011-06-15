@@ -34,26 +34,8 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
     public void shutdownServer()
     {
         executeRemoteJbossServiceCommand("stop");
-        
-        //TODO: I don't think this is needed, with behavior of java service wrapper
-        long startTime = System.currentTimeMillis();
-        while(serviceIsRunning())
-        {
-            int maxWait = 30;
-            if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
-            {
-                throw new RuntimeException("service not stopped after " + maxWait + " seconds");
-            }
-            try
-            {
-                TimeUnit.MILLISECONDS.sleep(100);
-            }
-            catch (InterruptedException e)
-            {
-                //TODO: think about how to handle this right
-                throw Throwables.propagate(e);
-            }
-        }
+        //JSW is pretty reliable at stopping the service; it will kill it if need be.
+        //We don't need to check that the service actually stopped.
     }
 
     private boolean serviceIsRunning()
