@@ -118,24 +118,16 @@ public class RemoteServiceControl
     /**
      * I believe the default ServicesPipeTimeout is 30 seconds; see http://bytes.com/topic/c-sharp/answers/274008-service-stop-timeout-setting
      */
-    int defaultStartTimeout = (int) TimeUnit.SECONDS.toMillis(45);
+    int serviceStateChangeTimeout = (int) TimeUnit.SECONDS.toMillis(45);
     
-    private int getServiceStateChangeTimeout()
+    public int getServiceStateChangeTimeout()
     {
-        return defaultStartTimeout;
-        
-        //not sure if this sort of thing is worth keeping around; it doesn't work, currently, on a012 at least.  It can't find the registry location.
-//        try
-//        {
-//            return registryService.getHKeyLocalMachineRegistryValue(Integer.class,
-//                        "System\\CurrentControlSet\\Control", "ServicesPipeTimeout");
-//        }
-//        catch (Exception e)
-//        {
-//            // TODO: hmmm
-//            log.warn("unable to lookup service state change timeout", e);
-//            return defaultStartTimeout;
-//        }
+        return serviceStateChangeTimeout;
+    }
+    
+    public void getServiceStateChangeTimeout(int serviceStateChangeTimeout)
+    {
+        this.serviceStateChangeTimeout = serviceStateChangeTimeout;
     }
 
 
