@@ -7,7 +7,6 @@ import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.ccci.util.NotImplementedException;
 
 import ch.ethz.ssh2.ChannelCondition;
 import ch.ethz.ssh2.Connection;
@@ -37,8 +36,6 @@ public class SshSession
     
     Charset charset = Charsets.UTF_8;
 
-
-
     public void connect() throws IOException
     {
         connection = new Connection(endpoint.getHostName());
@@ -50,108 +47,13 @@ public class SshSession
     }
 
 
-//    private void openShell() throws IOException
-//    {
-//        Session shellSession = connection.openSession();
-//        getOutputUpToPrompt();
-//    }
-
     
-    public String executeSessionCommand(String command) throws IOException
-    {
-        throw new NotImplementedException();
-//        openShellIfNecessary();
-//        writeShellCommand(command);
-//        return getOutputUpToPrompt();
-    }
-
-
-//    private void openShellIfNecessary() throws JSchException, IOException
-//    {
-//        if (shellChannel == null)
-//            openShell();
-//    }
-//
-//
-//    private void writeShellCommand(String command) throws IOException
-//    {
-//        commandWriter.write(command);
-//        commandWriter.write("\n");
-//        commandWriter.flush();
-//    }
-//
-//
-//    private String getOutputUpToPrompt() throws IOException
-//    {
-//        Pattern outputAndPromptPattern = buildPromptPattern();
-//
-//        StringBuilder builder = new StringBuilder();
-//        Matcher matcher = outputAndPromptPattern.matcher(builder);
-//        while (! matcher.matches())
-//        {
-//            char character = (char) outputReader.read();
-//            builder.append(character);
-//            matcher.reset();
-//        }
-//        
-//        return matcher.group(1);
-//    }
-//
-//    /** should match something like "output\n[mdrees@harta120 ~]$ " */
-//    Pattern buildPromptPattern()
-//    {
-//        String usernamePattern = escape(endpoint.getUsername());
-//        String machinePattern = nameUpToFirstDot(endpoint.getHostName());
-//        String workingDirPattern = "[\\w~]*";
-//        String endOfInput = "\\z";
-//        String promptPatternString =
-//                "(.*)" + "\\[" + usernamePattern + "@" + machinePattern + " " + workingDirPattern + "\\]\\$ " + endOfInput;
-//        
-//        return Pattern.compile(promptPatternString, Pattern.DOTALL);
-//    }
-//
-//    private String nameUpToFirstDot(String hostName)
-//    {
-//        if (hostName.contains("."))
-//        {
-//            return hostName.substring(0, hostName.indexOf("."));
-//        }
-//        else
-//        {
-//            return hostName;
-//        }
-//    }
-//
-//    private String escape(String username)
-//    {
-//        //TODO: this could be more robust...
-//        return username.replace(".", "\\.");
-//    }
     
     public void close()
     {
-//        disconnectShell();
         connection.close();
     }
 
-
-//    private void disconnectShell()
-//    {
-//        if (shellChannel != null)
-//        {
-//            try
-//            {
-//                writeShellCommand("exit");
-//                commandWriter.close();
-//            }
-//            catch (IOException e)
-//            {
-//                log.error("unable to send 'exit' command to shell; ignoring");
-//            }
-//            disconnectChannelAndLogExceptions(shellChannel);
-//        }
-//    }
-    
     
     private void disconnectSessionAndLogExceptions(Session session )
     {
