@@ -28,7 +28,7 @@ public class StaffServicesWebappControlInterface implements WebappControlInterfa
     public void verifyNewDeploymentActive()
     {
         String uri = "http://" + server + ":" + port +"/ss/green.html";
-        new PageMatcher().pingUntilPageMatches(uri, ".*OK.*", "green.html", 30);
+        new PageMatcher().pingUntilPageMatches(uri, ".*OK.*", "green.html", 60);
     }
 
     @Override
