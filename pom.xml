@@ -2,64 +2,28 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ccci</groupId>
   <artifactId>deployments</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1-SNAPSHOT</version>
   <name>Webapp Deployment Tools</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  
   <parent>
     <groupId>org.ccci</groupId>
-    <artifactId>ccci-root</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>abstract-java-project</artifactId>
+    <version>1-SNAPSHOT</version>
     <relativePath/>
   </parent>
  
- 
-    
-  <repositories>
-    <repository>
-      <id>ccci-libs-releases</id>
-      <name>Libraries (Full Releases)</name>
-      <url>http://arkham.ccci.org/artifactory/libs-releases/</url>
-    </repository>
-  </repositories>
-  
-  <ciManagement>
-    <system>Bamboo</system>
-  </ciManagement>
-  
   <scm>
-    <connection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/</connection>
-    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/</developerConnection>
+    <developerConnection>scm:svn:${svn.repository.url.base}/${svn.repository.name}/trunk/${svn.repository.path}/${project.artifactId}</developerConnection>
   </scm>
-      
-  <distributionManagement>
-    <repository>
-      <id>artifacts.ccci.org-releases</id>
-      <name>artifacts.ccci.org-releases</name>
-      <url>http://arkham.ccci.org:80/artifactory/libs-releases-local</url>
-    </repository>
   
-    <snapshotRepository>
-      <id>artifacts.ccci.org-snapshots</id>
-      <name>artifacts.ccci.org-snapshots</name>
-      <url>http://arkham.ccci.org:80/artifactory/libs-snapshots-local</url>
-    </snapshotRepository>
-  </distributionManagement>
-        
+      
+  <properties>
+    <svn.repository.path>commons</svn.repository.path>
+  </properties>
  
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${java.source.version}</source>
-          <target>${java.source.version}</target>
-          <showWarnings>true</showWarnings>
-          <showDeprecation>true</showDeprecation>
-        </configuration>
-      </plugin>
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -145,7 +109,7 @@
     <dependency>
         <groupId>org.ccci</groupId>
         <artifactId>util</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1</version>
     </dependency>
     
         
@@ -188,8 +152,4 @@
   </dependencies> 
   
   
-  <properties>
-    <java.source.version>1.6</java.source.version>
-  </properties>
-
 </project>
