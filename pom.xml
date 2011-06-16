@@ -2,19 +2,19 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.ccci</groupId>
   <artifactId>deployments</artifactId>
-  <version>1-SNAPSHOT</version>
+  <version>1</version>
   <name>Webapp Deployment Tools</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  
   <parent>
     <groupId>org.ccci</groupId>
     <artifactId>abstract-java-project</artifactId>
-    <version>1-SNAPSHOT</version>
-    <relativePath/>
+    <version>1</version>
+    <relativePath />
   </parent>
  
   <scm>
-    <developerConnection>scm:svn:${svn.repository.url.base}/${svn.repository.name}/trunk/${svn.repository.path}/${project.artifactId}</developerConnection>
+    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/tags/commons/deployments/deployments-1</developerConnection>
   </scm>
   
       
