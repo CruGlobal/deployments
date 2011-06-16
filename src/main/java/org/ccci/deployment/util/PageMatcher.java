@@ -41,14 +41,14 @@ public class PageMatcher
     
     /**
      * Repeatedly attempts to request the given {@code uri} and match the given {@code regularExpression} against
-     * the returned content.  If the page is unavailable, this will try for up to 30 seconds before failing.
+     * the returned content.  If the page is unavailable, this will try for up to {@code maxWaitTime} seconds before failing.
      * 
      * The exact behavior is a little complicated to describe; read the code for details.
      * 
      * @param uri
      * @param regularExpression
      * @param pageName 
-     * @param maxWaitTime 
+     * @param maxWaitTime number of seconds to wait before failing
      * @throws RuntimeException if the page cannot be loaded and matched
      */
     public Matcher pingUntilPageMatches(String uri, String regularExpression, String pageName, long maxWaitTime)
@@ -68,7 +68,7 @@ public class PageMatcher
             long currentTime = System.currentTimeMillis();
             if (currentTime > deadline)
             {
-                throw new RuntimeException("Unable to connect to " + uri + " after " + maxWaitTime + "seconds of trying", mostRecentException);
+                throw new RuntimeException("Unable to connect to " + uri + " after " + maxWaitTime + " seconds of trying", mostRecentException);
             }
 
             try
