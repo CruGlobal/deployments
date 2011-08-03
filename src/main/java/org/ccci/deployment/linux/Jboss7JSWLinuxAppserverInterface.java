@@ -151,6 +151,7 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
     {
         try
         {
+            //TODO: only use sudo if user running is not 'jboss'  ( i think we can use 'whoami' or 'id -un' to determine this)
             return session.executeSingleCommand("sudo -u jboss " + jswBinPath + "/jboss.sh " + jbossServiceCommand);
         }
         catch (IOException e)
