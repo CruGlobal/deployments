@@ -20,7 +20,6 @@ import org.ccci.util.mail.MailMessageFactory;
 import org.ccci.util.strings.Strings;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 public class DeploymentDriver
 {
@@ -65,11 +64,9 @@ public class DeploymentDriver
         log.info("deploying from " + type + " " + deploymentLocation);
 
         
-        List<DeploymentTransferInterface> transferInterfaces = Lists.newArrayList();
-        List<AppserverInterface> appserverInterfaces = Lists.newArrayList();
         try
         {
-            deployToEachNode(deployment, localStorage, transferInterfaces, appserverInterfaces);
+            deployToEachNode(deployment, localStorage);
         }
         finally
         {
@@ -81,14 +78,11 @@ public class DeploymentDriver
 
     private void deployToEachNode(
           WebappDeployment deployment, 
-          LocalDeploymentStorage localStorage,
-          List<DeploymentTransferInterface> transferInterfaces, 
-          List<AppserverInterface> appserverInterfaces)
+          LocalDeploymentStorage localStorage)
     {
         for (Node node : configuration.listNodes())
         {
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
-            transferInterfaces.add(transferInterface);
             
             log.info("transferring new webapp to " + node.getName());
             transferInterface.transferNewDeploymentToServer(deployment, localStorage);
@@ -126,7 +120,6 @@ public class DeploymentDriver
             }
             
             AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
-            appserverInterfaces.add(appserverInterface);
             
             if (restartType == RestartType.FULL_PROCESS_RESTART)
             {
