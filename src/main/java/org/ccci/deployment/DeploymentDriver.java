@@ -194,7 +194,7 @@ public class DeploymentDriver
 
     private void waitIfNecessary(boolean first)
     {
-        int pauseTime = 30;
+        int pauseTime = configuration.getWaitTimeBetweenNodes();
         if (!first)
         {
             log.info("waiting " + pauseTime + " seconds before restarting next node");

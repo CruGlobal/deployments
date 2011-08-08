@@ -161,4 +161,10 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     {
     }
 
+    @Override
+    public int getWaitTimeBetweenNodes()
+    {
+        return 30;
+    }
+
 }

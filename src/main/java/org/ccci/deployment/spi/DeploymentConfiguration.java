@@ -41,4 +41,6 @@ public interface DeploymentConfiguration
     public LoadbalancerInterface buildLoadBalancerInterface();
 
     void closeResources();
+
+    public int getWaitTimeBetweenNodes();
 }
