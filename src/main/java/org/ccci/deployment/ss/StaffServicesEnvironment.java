@@ -75,10 +75,24 @@ public enum StaffServicesEnvironment
         false,
         buildProjectLead(),
         9580),
+    STAFFWEB_REBRANDING_STAGING(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA331A332(),
+        false,
+        buildProjectLead(),
+        9580),
     STAFFWEB_REBRANDING_STAGE1(
         "/Tomcat/instances/ss-inst-staffweb-rebranding", 
         "Tomcat - Staff Services - Rebranding", 
         buildA331(),
+        false,
+        buildProjectLead(),
+        9580),
+    STAFFWEB_REBRANDING_STAGE2(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA332(),
         false,
         buildProjectLead(),
         9580);
