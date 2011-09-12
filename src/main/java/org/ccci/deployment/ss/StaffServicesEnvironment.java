@@ -13,17 +13,17 @@ import com.google.common.collect.Iterables;
 public enum StaffServicesEnvironment
 {
     STAGING(
-        "Tomcat/instances/ss-inst", 
+        "W$/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
-        buildA012(),
-        true,
+        buildA331A332(),
+        false,
         buildProjectLead(),
         8180),
     TEST(
-        "Tomcat/instances/ss-inst-test", 
-        "Tomcat - Staff Services - Test", 
-        buildA012(),
-        true,
+        "W$/Tomcat/instances/ss-inst", 
+        "Tomcat - Staff Services", 
+        buildA321(),
+        false,
         buildProjectLead(),
         9180),
     SIEBEL_TEST(
@@ -48,23 +48,23 @@ public enum StaffServicesEnvironment
         buildProjectLead(),
         9580),
     PRODUCTION(
-        "/Tomcat/instances/ss-inst", 
+        "W$/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
-        buildA041A042(),
-        true,
+        buildA341A342(),
+        false,
         buildProductionSubscribers(),
         8180),
     PROD1(
         "/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
-        buildA041(),
+        buildA341(),
         true,
         buildProductionSubscribers(),
         8180),
     PROD2(
         "/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
-        buildA042(),
+        buildA342(),
         true,
         buildProductionSubscribers(),
         8180);
@@ -110,13 +110,9 @@ public enum StaffServicesEnvironment
             EmailAddress.valueOf("matt.drees@ccci.org"),
             EmailAddress.valueOf("ben.sisson@ccci.org"),
             EmailAddress.valueOf("ryan.t.carlson@ccci.org"),
+            EmailAddress.valueOf("linda.ye@ccci.org"),
             EmailAddress.valueOf("steve.bratton@ccci.org"),
             EmailAddress.valueOf("luis.rodriguez@ccci.org"));
-    }
-
-    private static List<Node> buildA012()
-    {
-        return ImmutableList.of(new Node("a012", "hart-a012.net.ccci.org"));
     }
     
     private static List<Node> buildA321()
@@ -129,26 +125,31 @@ public enum StaffServicesEnvironment
         return ImmutableList.of(new Node("a331", "hart-a331.net.ccci.org"));
     }
     
-    @SuppressWarnings("unused")
     private static List<Node> buildA332()
     {
         return ImmutableList.of(new Node("a332", "hart-a332.net.ccci.org"));
     }
     
-    private static List<Node> buildA041()
-    {
-        return ImmutableList.of(new Node("a041", "hart-a041.net.ccci.org"));
-    }
-    
-    private static List<Node> buildA042()
-    {
-        return ImmutableList.of(new Node("a042", "hart-a042.net.ccci.org"));
-    }
-    
-    private static List<Node> buildA041A042()
+    private static List<Node> buildA331A332()
     {
         return ImmutableList.copyOf(
-            Iterables.concat(buildA041(), buildA042()));
+            Iterables.concat(buildA331(), buildA332()));
+    }
+    
+    private static List<Node> buildA341()
+    {
+        return ImmutableList.of(new Node("a341", "hart-a341.net.ccci.org"));
+    }
+    
+    private static List<Node> buildA342()
+    {
+        return ImmutableList.of(new Node("a342", "hart-a342.net.ccci.org"));
+    }
+    
+    private static List<Node> buildA341A342()
+    {
+        return ImmutableList.copyOf(
+            Iterables.concat(buildA341(), buildA342()));
     }
 
     public List<Node> listNodes()
