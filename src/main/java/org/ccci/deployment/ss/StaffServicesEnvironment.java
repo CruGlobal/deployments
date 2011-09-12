@@ -12,13 +12,6 @@ import com.google.common.collect.Iterables;
 
 public enum StaffServicesEnvironment
 {
-    STAGING(
-        "W$/Tomcat/instances/ss-inst", 
-        "Tomcat - Staff Services", 
-        buildA331A332(),
-        false,
-        buildProjectLead(),
-        8180),
     TEST(
         "W$/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
@@ -26,27 +19,27 @@ public enum StaffServicesEnvironment
         false,
         buildProjectLead(),
         9180),
-    SIEBEL_TEST(
-        "W$/Tomcat/instances/ss-inst-siebel", 
-        "Tomcat - Staff Services - Siebel", 
-        buildA321(),
+    STAGING(
+        "W$/Tomcat/instances/ss-inst", 
+        "Tomcat - Staff Services", 
+        buildA331A332(),
         false,
         buildProjectLead(),
-        9380),
-    STAFFWEB_REBRANDING_TEST(
-        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
-        "Tomcat - Staff Services - Rebranding", 
-        buildA321(),
-        false,
-        buildProjectLead(),
-        9580),
-    STAFFWEB_REBRANDING_STAGE1(
-        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
-        "Tomcat - Staff Services - Rebranding", 
+        8180),
+    STAGE1(
+        "W$/Tomcat/instances/ss-inst", 
+        "Tomcat - Staff Services", 
         buildA331(),
         false,
         buildProjectLead(),
-        9580),
+        8180),
+    STAGE2(
+        "W$/Tomcat/instances/ss-inst", 
+        "Tomcat - Staff Services", 
+        buildA332(),
+        false,
+        buildProjectLead(),
+        8180),
     PRODUCTION(
         "W$/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
@@ -67,7 +60,28 @@ public enum StaffServicesEnvironment
         buildA342(),
         true,
         buildProductionSubscribers(),
-        8180);
+        8180),
+    SIEBEL_TEST(
+        "W$/Tomcat/instances/ss-inst-siebel", 
+        "Tomcat - Staff Services - Siebel", 
+        buildA321(),
+        false,
+        buildProjectLead(),
+        9380),
+    STAFFWEB_REBRANDING_TEST(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA321(),
+        false,
+        buildProjectLead(),
+        9580),
+    STAFFWEB_REBRANDING_STAGE1(
+        "/Tomcat/instances/ss-inst-staffweb-rebranding", 
+        "Tomcat - Staff Services - Rebranding", 
+        buildA331(),
+        false,
+        buildProjectLead(),
+        9580);
 
     public final String serviceName;
     
