@@ -118,11 +118,6 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
                 "/WEB-INF/src", 
                 "/WEB-INF/test-src"));
         
-        if (environment.moveWebInfLogs)
-        {
-            descriptor.setLogPath("/WEB-INF/logs");
-        }
-        
         return descriptor;
     }
 
