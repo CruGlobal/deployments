@@ -18,7 +18,7 @@ import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.LocalDeploymentStorage;
 import org.ccci.deployment.spi.WebappControlInterface;
 import org.ccci.deployment.windows.SmbDeploymentTransferService;
-import org.ccci.deployment.windows.TomcatWindowsAppserverInterface;
+import org.ccci.deployment.windows.SimpleWindowsServiceAppserverInterface;
 import org.ccci.util.mail.EmailAddress;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
 import org.ccci.windows.smb.SmbEndpoint;
@@ -45,7 +45,7 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     @Override
     public AppserverInterface buildAppserverInterface(Node node)
     {
-        return new TomcatWindowsAppserverInterface(node, environment.serviceName, credential);
+        return new SimpleWindowsServiceAppserverInterface(node, environment.serviceName, credential);
     }
 
     @Override

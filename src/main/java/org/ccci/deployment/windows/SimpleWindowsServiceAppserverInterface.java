@@ -16,14 +16,14 @@ import org.jinterop.dcom.common.JIException;
 
 import com.google.common.base.Throwables;
 
-public class TomcatWindowsAppserverInterface implements AppserverInterface
+public class SimpleWindowsServiceAppserverInterface implements AppserverInterface
 {
 
     private final String serviceName;
     private final Node node;
     private final ActiveDirectoryCredential activeDirectoryCredential;
 
-    public TomcatWindowsAppserverInterface(Node node, String serviceName, ActiveDirectoryCredential activeDirectoryCredential)
+    public SimpleWindowsServiceAppserverInterface(Node node, String serviceName, ActiveDirectoryCredential activeDirectoryCredential)
     {
         this.node = node;
         this.serviceName = serviceName;

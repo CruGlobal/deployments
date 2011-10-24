@@ -24,6 +24,8 @@ import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
 
+//TODO: there is a lot of copy/paste/tweak going on here.  There needs to be better abstraction of archive vs exploded
+//deployments
 public class SmbDeploymentTransferService implements DeploymentTransferInterface
 {
 
@@ -54,8 +56,58 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     @Override
     public void transferNewDeploymentToServer(WebappDeployment deployment, LocalDeploymentStorage localStorage)
     {
-        assert deployment.getPackaging() == Packaging.EXPLODED; //for now
+        if (deployment.getPackaging() == Packaging.EXPLODED)
+        {
+            transferExplodedDeployment(deployment, localStorage);
+        }
+        else if (deployment.getPackaging() == Packaging.ARCHIVE)
+        {
+            transferArchiveDeployment(deployment, localStorage);
+        }
+        else
+        {
+            badPackaging(deployment);
+        }
+    }
+
+
+    private void badPackaging(WebappDeployment deployment)
+    {
+        throw new IllegalArgumentException("bad packaging: " + deployment.getPackaging());
+    }
+
+
+    private void transferArchiveDeployment(WebappDeployment deployment, LocalDeploymentStorage localStorage)
+    {
+        String localFilePath = localStorage.getDeploymentLocation().getPath() + "/" + deployment.getName() + ".war";
+        try
+        {
+            transferArchiveUsingLocalFilePath(deployment, localFilePath);
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+
+
+    private void transferArchiveUsingLocalFilePath(WebappDeployment deployment, String localFilePath)
+            throws SmbException, MalformedURLException, UnknownHostException, IOException
+    {
+        SmbFile remoteTransferPath = getRemoteTransferPath(deployment);
+        File localFile = new File(localFilePath);
         
+        if (remoteTransferPath.exists())
+        {
+            remoteTransferPath.delete();
+        }
+      
+        copyFileToRemoteFile(localFile, remoteTransferPath);
+    }
+
+
+    private void transferExplodedDeployment(WebappDeployment deployment, LocalDeploymentStorage localStorage)
+    {
         File localDeploymentPath = localStorage.getDeploymentLocation();
         assert localDeploymentPath.isDirectory();
         assert localDeploymentPath.exists();
@@ -70,35 +122,34 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         {
             throw Throwables.propagate(e);
         }
-        
     }
     
 
     private SmbFile getRemoteBackupPath(WebappDeployment deployment) throws SmbException, MalformedURLException, UnknownHostException
     {
         return initRemoteDirectoryAndBuildPath(remoteBackupDirectory, 
-            deployment.getName() + ".bak",
+            deployment.getDeployedWarName() + ".bak",
             deployment.getPackaging());
     }
 
     private SmbFile getRemoteDeploymentPath(WebappDeployment deployment) throws SmbException, MalformedURLException, UnknownHostException
     {
         return initRemoteDirectoryAndBuildPath(remoteDeploymentDirectory, 
-            deployment.getName(), 
+            deployment.getDeployedWarName(), 
             deployment.getPackaging());
     }
 
     private SmbFile getRemoteTransferPath(WebappDeployment deployment) throws SmbException, MalformedURLException, UnknownHostException
     {
         return initRemoteDirectoryAndBuildPath(remoteTransferDirectory, 
-            deployment.getName() + ".tmp", 
+            deployment.getDeployedWarName() + ".tmp", 
             deployment.getPackaging());
     }
 
     private SmbFile getRemoteRollbackPath(WebappDeployment deployment) throws SmbException, MalformedURLException, UnknownHostException
     {
         return initRemoteDirectoryAndBuildPath(remoteBackupDirectory, 
-            deployment.getName() + ".rolledback", 
+            deployment.getDeployedWarName() + ".rolledback", 
             deployment.getPackaging());
     }
     
@@ -116,7 +167,7 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         }
         
         return packaging == Packaging.ARCHIVE ? 
-                endpoint.createChildFilePath(remoteDirectory, name) :
+                endpoint.createChildFilePath(remoteDirectory, name + ".war") :
                 endpoint.createChildDirectoryPath(remoteDirectory, name);
     }
 
@@ -183,7 +234,7 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         {
             if (child.isFile())
             {
-                copyFile(child, destinationDir);
+                copyFileToRemoteDirectory(child, destinationDir);
             }
             else if (child.isDirectory())
             {
@@ -200,12 +251,18 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         }
     }
 
-    private void copyFile(File file, SmbFile destinationDir) throws IOException
+    private void copyFileToRemoteDirectory(File file, SmbFile destinationDir) throws IOException
     {
         assert file.isFile();
         
         String filename = file.getName();
         final SmbFile destinationFile = endpoint.createChildFilePath(destinationDir, filename);
+        copyFileToRemoteFile(file, destinationFile);
+    }
+
+
+    private void copyFileToRemoteFile(File file, final SmbFile destinationFile) throws SmbException, IOException
+    {
         destinationFile.createNewFile();
         
         Files.copy(file, new OutputSupplier<OutputStream>()
@@ -219,6 +276,99 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     
     @Override
     public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment, ExceptionBehavior exceptionBehavior)
+    {
+        if (deployment.getPackaging() == Packaging.EXPLODED)
+        {
+            backupOldDeploymentAndActivateNewExplodedDeployment(deployment, exceptionBehavior);
+        }
+        else if (deployment.getPackaging() == Packaging.ARCHIVE)
+        {
+            backupOldDeploymentAndActivateNewArchiveDeployment(deployment, exceptionBehavior);
+        }
+        else
+        {
+            badPackaging(deployment);
+        }
+    }
+
+    private String getDeployedWarFileName(WebappDeployment deployment)
+    {
+        return deployment.getDeployedWarName() + ".war";
+    }
+
+    private String getBackupFilePath(String warFileName)
+    {
+        return remoteBackupDirectory + "/" + warFileName;
+    }
+    
+    private void backupOldDeploymentAndActivateNewArchiveDeployment(WebappDeployment deployment,
+                                                                    ExceptionBehavior exceptionBehavior)
+    {
+        String warFileName = getDeployedWarFileName(deployment);
+        String transferFilePath = remoteTransferDirectory + "/" + warFileName + ".tmp";
+        String webappDeploymentPath = remoteDeploymentDirectory + "/" + warFileName;
+        String backupPath = getBackupFilePath(warFileName);
+        try
+        {
+            attemptBackingUpCurrentArchiveDeployment(exceptionBehavior, webappDeploymentPath, backupPath);
+            activateNewArchiveDeployment(transferFilePath, webappDeploymentPath);
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+
+
+    private void activateNewArchiveDeployment(String transferFilePath, String webappDeploymentPath) throws IOException
+    {
+        try
+        {
+            moveFileToRemotePath(transferFilePath, webappDeploymentPath);
+        }
+        catch (Exception e)
+        {
+            log.warn("Old deployment was backed up, but new deployment could not be deployed.  Manual recovery is needed!");
+            Throwables.propagateIfPossible(e, IOException.class);
+        }
+    }
+
+
+    private void attemptBackingUpCurrentArchiveDeployment(ExceptionBehavior exceptionBehavior, String webappDeploymentPath,
+                                                   String backupPath) throws AssertionError
+    {
+        try
+        {
+            moveFileToRemotePath(webappDeploymentPath, backupPath);
+        }
+        catch (Exception e)
+        {
+            if (exceptionBehavior == ExceptionBehavior.HALT)
+                Throwables.propagate(e);
+            else if (exceptionBehavior == ExceptionBehavior.LOG)
+                log.error("unable to back up current deployment; ignoring", e);
+            else
+                throw new AssertionError();
+        }
+    }
+
+
+    private void moveFileToRemotePath(String webappDeploymentPathAsString, String backupPathAsString) throws SmbException
+    {
+        
+        SmbFile backupPath = endpoint.createSmbPath(backupPathAsString);
+        if (backupPath.exists())
+        {
+            backupPath.delete();
+        }
+        SmbFile webappDeploymentPath = endpoint.createSmbPath(webappDeploymentPathAsString);
+        webappDeploymentPath.renameTo(backupPath);
+    }
+    
+
+    private void backupOldDeploymentAndActivateNewExplodedDeployment(WebappDeployment deployment,
+                                                                     ExceptionBehavior exceptionBehavior)
+            throws AssertionError
     {
         try
         {
@@ -301,6 +451,50 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
 
     @Override
     public void rollbackCurrentDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment)
+    {
+        if (deployment.getPackaging() == Packaging.EXPLODED)
+        {
+            rollbackCurrentExplodedDeploymentAndActivateBackedUpDeployment(deployment);
+        }
+        else if (deployment.getPackaging() == Packaging.ARCHIVE)
+        {
+            rollbackCurrentArchiveDeploymentAndActivateBackedUpDeployment(deployment);
+        }
+        else
+        {
+            badPackaging(deployment);
+        }
+    }
+
+
+    private void rollbackCurrentArchiveDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment)
+    {
+        String warFileName = getDeployedWarFileName(deployment);
+        String backupPath = getBackupFilePath(warFileName);
+        String rolledBackDeploymentsPath = remoteBackupDirectory + "/" + warFileName + ".rolledback";
+        
+        String webappDeploymentPath = remoteDeploymentDirectory + "/" + warFileName;
+        try
+        {
+            moveFileToRemotePath(webappDeploymentPath, rolledBackDeploymentsPath);
+            try
+            {
+                moveFileToRemotePath(backupPath, webappDeploymentPath);
+            }
+            catch (Exception e)
+            {
+                log.warn("Current deployment was rolled back, but old deployment could not be restored.  Manual recovery is needed!");
+                Throwables.propagateIfPossible(e, IOException.class);
+            }
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+
+
+    private void rollbackCurrentExplodedDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment)
     {
         try
         {
