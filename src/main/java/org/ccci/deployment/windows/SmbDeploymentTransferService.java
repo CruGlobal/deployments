@@ -94,7 +94,10 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     private void transferArchiveUsingLocalFilePath(WebappDeployment deployment, String localFilePath)
             throws SmbException, MalformedURLException, UnknownHostException, IOException
     {
-        SmbFile remoteTransferPath = getRemoteTransferPath(deployment);
+
+        String warFileName = getDeployedWarFileName(deployment);
+        String remoteTransferPathAsString = remoteTransferDirectory + "/" + warFileName + ".tmp";
+        SmbFile remoteTransferPath = endpoint.createSmbPath(remoteTransferPathAsString); 
         File localFile = new File(localFilePath);
         
         if (remoteTransferPath.exists())
@@ -308,14 +311,24 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         String transferFilePath = remoteTransferDirectory + "/" + warFileName + ".tmp";
         String webappDeploymentPath = remoteDeploymentDirectory + "/" + warFileName;
         String backupPath = getBackupFilePath(warFileName);
+        attemptBackingUpCurrentArchiveDeployment(exceptionBehavior, webappDeploymentPath, backupPath);
         try
         {
-            attemptBackingUpCurrentArchiveDeployment(exceptionBehavior, webappDeploymentPath, backupPath);
             activateNewArchiveDeployment(transferFilePath, webappDeploymentPath);
         }
         catch (IOException e)
         {
             throw Throwables.propagate(e);
+        }
+    }
+
+
+    private void createBackupDirectoryIfNeeded() throws SmbException
+    {
+        SmbFile path = endpoint.createSmbPath(remoteBackupDirectory);
+        if (!path.exists())
+        {
+            path.mkdirs();
         }
     }
 
@@ -339,6 +352,7 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     {
         try
         {
+            createBackupDirectoryIfNeeded();
             moveFileToRemotePath(webappDeploymentPath, backupPath);
         }
         catch (Exception e)
@@ -353,16 +367,22 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     }
 
 
-    private void moveFileToRemotePath(String webappDeploymentPathAsString, String backupPathAsString) throws SmbException
+    private void moveFileToRemotePath(String webappDeploymentPathAsString, String backupPathAsString) throws IOException
     {
-        
         SmbFile backupPath = endpoint.createSmbPath(backupPathAsString);
         if (backupPath.exists())
         {
             backupPath.delete();
         }
         SmbFile webappDeploymentPath = endpoint.createSmbPath(webappDeploymentPathAsString);
-        webappDeploymentPath.renameTo(backupPath);
+        try
+        {
+            webappDeploymentPath.renameTo(backupPath);
+        }
+        catch (SmbException e)
+        {
+            throw new IOException("Could not move " + webappDeploymentPathAsString + " to " + backupPathAsString);
+        }
     }
     
 
