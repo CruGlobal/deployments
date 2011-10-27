@@ -12,6 +12,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreConnectionPNames;
@@ -97,6 +98,11 @@ public class PageMatcher
             {
                 mostRecentException = e;
                 log.debug("connection exception; continuing to try to connect", e);
+            }
+            catch (ConnectTimeoutException e)
+            {
+                mostRecentException = e;
+                log.debug("connection timeout; continuing to try to connect", e);
             }
             catch (ClientProtocolException e)
             {
