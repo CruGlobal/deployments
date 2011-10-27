@@ -1,6 +1,7 @@
 package org.ccci.deployment.util;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,6 +104,11 @@ public class PageMatcher
             {
                 mostRecentException = e;
                 log.debug("connection timeout; continuing to try to connect", e);
+            }
+            catch (SocketTimeoutException e)
+            {
+                mostRecentException = e;
+                log.debug("socket read timeout; continuing to try to connect", e);
             }
             catch (ClientProtocolException e)
             {
