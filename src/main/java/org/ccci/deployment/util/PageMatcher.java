@@ -38,7 +38,7 @@ public class PageMatcher
         httpclient = new DefaultHttpClient();
         
         httpclient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(5));
-        httpclient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(30));
+        httpclient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, (int) TimeUnit.SECONDS.toMillis(60));
     }
     
     /**
