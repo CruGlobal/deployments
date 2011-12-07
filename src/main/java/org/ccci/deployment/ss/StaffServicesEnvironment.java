@@ -12,9 +12,9 @@ import com.google.common.collect.Iterables;
 
 public enum StaffServicesEnvironment
 {
-    TEST(
-        "W$/Tomcat/instances/ss-inst", 
-        "Tomcat - Staff Services", 
+    BRANCHWORK(
+        "W$/Tomcat/instances/ss-inst-branch-work", 
+        "Tomcat - Staff Services - branch work", 
         buildA321(),
         buildProjectLead(),
         9180),
