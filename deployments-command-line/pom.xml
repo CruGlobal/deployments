@@ -10,10 +10,6 @@
     <version>3-SNAPSHOT</version>
   </parent>
   
-  <scm>
-    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/deployments-command-line</developerConnection>
-  </scm>
-
   <dependencies>
     <dependency>
       <groupId>org.ccci</groupId>
