@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.ccci</groupId>
+  <artifactId>deployments-command-line</artifactId>
+  <version>3-SNAPSHOT</version>
+  
+  <parent>
+    <artifactId>deployments-parent</artifactId>
+    <groupId>org.ccci</groupId>
+    <version>3-SNAPSHOT</version>
+  </parent>
+  
+  <scm>
+    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments/deployments-command-line</developerConnection>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.ccci</groupId>
+      <artifactId>deployments-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.13</version>
+    </dependency>
+  
+  </dependencies>
+  
+    <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.ccci.deployment.Main</mainClass>
+                </transformer>
+              </transformers>
+              <artifactSet>
+                <excludes>
+                  <exclude>javax.servlet:servlet-api</exclude>
+                  <exclude>org.jboss.seam:*</exclude>
+                  <exclude>xstream:xstream</exclude>
+                  <exclude>xpp3:xpp3_min</exclude>
+                  <exclude>commons-beanutils:commons-beanutils</exclude>
+                  <exclude>org.jboss.el:jboss-el</exclude>
+                  <exclude>javax.el:el-api</exclude>
+                  <exclude>com.sun.facelets:jsf-facelets</exclude>
+                  <exclude>joda-ext:jodaExt</exclude>
+                  <exclude>org.testng:testng</exclude>
+                  <exclude>org.slf4j:slf4j-api</exclude>
+                  <exclude>org.ccci:cas-client-custom</exclude>
+                </excludes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+        
+         <!-- 
+         this plugin's dependency on org.apache.commons:commons-io:0.6 is problematic.  That lib
+         is not the official commons-io maven artifact, and it's pom is malformed, which causes
+         artifactory to refuse to cache it.  So, we use a newer jdependency dependenc (0.7) which
+         uses the official commons-io artifact.
+          -->
+         <dependencies>
+           <dependency>
+             <groupId>org.vafer</groupId>
+             <artifactId>jdependency</artifactId>
+             <version>0.7</version>
+           </dependency>
+           
+        </dependencies>
+              
+      </plugin>
+    </plugins>
+  </build>
+  
+  
+</project>

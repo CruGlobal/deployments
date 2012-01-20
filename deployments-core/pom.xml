@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.ccci</groupId>
+  <artifactId>deployments-core</artifactId>
+  <version>3-SNAPSHOT</version>
+  <name>Webapp Deployment Tools (Core)</name>
+  <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
+ 
+  <parent>
+    <groupId>org.ccci</groupId>
+    <artifactId>deployments-parent</artifactId>
+    <version>3-SNAPSHOT</version> 
+  </parent>
+ 
+  <scm>
+    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments</developerConnection>
+  </scm>
+  
+      
+  <properties>
+    <svn.repository.path>commons</svn.repository.path>
+  </properties>
+ 
+  <dependencies>
+    
+    <dependency>
+      <groupId>org.ccci</groupId>
+      <artifactId>util</artifactId>
+      <version>1</version>
+    </dependency>
+    
+        
+    <dependency>
+      <groupId>org.jvnet.hudson</groupId>
+      <artifactId>jinterop-wmi</artifactId>
+      <version>1.0</version>
+    </dependency>
+    
+    <!-- This is used only for the Options class; we use jcommander annotations there.  This isn't needed at runtime
+    for ant or maven deployments. -->
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.13</version>
+      <optional>true</optional>
+    </dependency>
+    
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.0</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>ch.ethz.ganymed</groupId>
+      <artifactId>ganymed-ssh2</artifactId>
+      <version>build251beta1</version>
+    </dependency>
+  
+  </dependencies>
+  
+</project>
