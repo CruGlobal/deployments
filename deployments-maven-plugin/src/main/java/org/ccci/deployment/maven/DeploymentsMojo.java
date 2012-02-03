@@ -2,7 +2,6 @@ package org.ccci.deployment.maven;
 
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -11,7 +10,6 @@ import org.ccci.deployment.ApplicationLookup;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
 import org.ccci.deployment.Options;
-import org.ccci.util.ConsoleUtil;
 
 /**
  * Goal which deploys the configured application
