@@ -1,10 +1,17 @@
 package org.ccci.deployment.maven;
 
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.ccci.deployment.ApplicationLookup;
+import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
-import org.jboss.seam.util.Strings;
+import org.ccci.deployment.Options;
+import org.ccci.util.ConsoleUtil;
 
 /**
  * Goal which deploys the configured application
@@ -22,30 +29,174 @@ public class DeploymentsMojo
      */
     private String passwordEnvironmentVariableName;
 
+    /**
+     * The password to use for transfer & service restarts
+     * 
+     * @parameter expression="${deployments.password}" 
+     */
+    private String password;
+    
+    /**
+     * The username to use for for transfer & service restarts
+     * 
+     * @parameter expression="${deployments.username}" 
+     */
+    private String username;
+    
+    
+    /**
+     * Which environment (dev, staging, production, etc) to deploy to. Each application defines its own set of possible environments.
+     * 
+     * @parameter expression="${deployments.environment}" 
+     */
+    private String environment;
+    
+    
+    /**
+     * the url for the continuous integration server running this deployment
+     * 
+     * @parameter expression="${deployments.continuousIntegrationUrl}" 
+     */
+    private String continuousIntegrationUrl;
+    
+    
+    /**
+     * which directory contains the application to deploy
+     * 
+     * @parameter expression="${deployments.sourceDirectory}" 
+     */
+    private File sourceDirectory;
+    
+    /**
+     * the Active Directory domain for the username, if this is a deployment to a windows machine
+     * 
+     * @parameter expression="${deployments.domain}" 
+     */
+    private String domain;
+    
+    /**
+     * which web application to deploy.  Optional if a default application is on the classpath.
+     * 
+     * @parameter expression="${deployments.application}" 
+     */
+    private String application;
+    
+    /**
+     * Whether to prompt for a password (requires keyboard interaction)
+     * 
+     * @parameter expression="${deployments.promptPassword}" 
+     */
+    private boolean promptPassword;
+    
     public void execute()
-        throws MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         
+        lookupPasswordIfNecessary();
+
+        Options options = initializeOptions();
         
-        String password;
-        if (Strings.isEmpty(passwordEnvironmentVariableName))
+        DeploymentDriver driver;
+        try
         {
-            getLog().warn("did not provide passwordEnvironmentVariableName");
-            return;
+            driver = new DeploymentDriver(options);
         }
-        else
+        catch (ConfigurationException e)
         {
-            password = System.getenv(passwordEnvironmentVariableName);
+            throw buildFailureException(e);
         }
         
-        if (Strings.isEmpty(password))
+        driver.deploy();
+    }
+
+
+    private Options initializeOptions() throws MojoFailureException
+    {
+        Options options = new Options();
+        
+        require(environment, "environment");
+        
+        options.username = username;
+        options.password = password;
+        options.domain = domain;
+        options.environment = environment;
+        options.continuousIntegrationUrl = continuousIntegrationUrl;
+        options.sourceDirectory = sourceDirectory;
+        
+        if (application != null)
         {
-            getLog().warn("Unable to get password from $" + passwordEnvironmentVariableName);
+            try
+            {
+                options.application = new ApplicationLookup().lookupApplication(application);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw buildFailureException(e);
+            }
         }
-        else
+
+        
+        try
         {
-            getLog().info("got password; it is " + password.length() + " characters long");
+            options.initializeDefaults();
         }
+        catch (IllegalStateException e)
+        {
+            throw buildFailureException(e);
+        }
+        return options;
+    }
+
+
+    private void lookupPasswordIfNecessary() throws MojoFailureException, MojoExecutionException
+    {
+//        if (promptPassword)
+//        {
+//            try
+//            {
+//                password = ConsoleUtil.readPasswordFromInput();
+//            }
+//            catch (IOException e)
+//            {
+//                throw new MojoExecutionException("unable to read password", e);
+//            }
+//        }
+//        else 
+        if (password == null)
+        {
+            if (passwordEnvironmentVariableName == null)
+            {
+                getLog().warn("did not provide password and did not provide passwordEnvironmentVariableName");
+            }
+            else
+            {
+                getPasswordFromEnvironmentVariable();
+            }
+        }
+    }
+
+
+    private void getPasswordFromEnvironmentVariable() throws MojoFailureException
+    {
+        password = System.getenv(passwordEnvironmentVariableName);
+        if (password == null)
+        {
+            throw new MojoFailureException("Unable to get password from environment varible " + passwordEnvironmentVariableName);
+        }
+    }
+
+
+    private MojoFailureException buildFailureException(Exception e) throws MojoFailureException
+    {
+        MojoFailureException mojoFailureException = new MojoFailureException(e.getMessage());
+        mojoFailureException.initCause(e);
+        throw mojoFailureException;
+    }
+
+    private void require(Object parameter, String parameterName) throws MojoFailureException
+    {
+        if (parameter == null)
+            throw new MojoFailureException(String.format("Parameter %s is required", parameterName));
     }
 
     public String getPasswordEnvironmentVariableName()
@@ -56,6 +207,76 @@ public class DeploymentsMojo
     public void setPasswordEnvironmentVariableName(String passwordEnvironmentVariableName)
     {
         this.passwordEnvironmentVariableName = passwordEnvironmentVariableName;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
+    }
+
+    public String getUsername()
+    {
+        return username;
+    }
+
+    public void setUsername(String username)
+    {
+        this.username = username;
+    }
+
+    public String getEnvironment()
+    {
+        return environment;
+    }
+
+    public void setEnvironment(String environment)
+    {
+        this.environment = environment;
+    }
+
+    public String getContinuousIntegrationUrl()
+    {
+        return continuousIntegrationUrl;
+    }
+
+    public void setContinuousIntegrationUrl(String continuousIntegrationUrl)
+    {
+        this.continuousIntegrationUrl = continuousIntegrationUrl;
+    }
+
+    public File getSourceDirectory()
+    {
+        return sourceDirectory;
+    }
+
+    public void setSourceDirectory(File sourceDirectory)
+    {
+        this.sourceDirectory = sourceDirectory;
+    }
+
+    public String getDomain()
+    {
+        return domain;
+    }
+
+    public void setDomain(String domain)
+    {
+        this.domain = domain;
+    }
+
+    public String getApplication()
+    {
+        return application;
+    }
+
+    public void setApplication(String application)
+    {
+        this.application = application;
     }
     
     
