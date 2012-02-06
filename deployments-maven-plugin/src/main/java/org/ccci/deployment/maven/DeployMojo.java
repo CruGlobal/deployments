@@ -17,7 +17,7 @@ import org.ccci.deployment.Options;
  * @goal deploy
  * 
  */
-public class DeploymentsMojo
+public class DeployMojo
     extends AbstractMojo
 {
     /**
@@ -45,6 +45,7 @@ public class DeploymentsMojo
     /**
      * Which environment (dev, staging, production, etc) to deploy to. Each application defines its own set of possible environments.
      * 
+     * @required
      * @parameter expression="${deployments.environment}" 
      */
     private String environment;
