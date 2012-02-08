@@ -2,7 +2,16 @@ package org.ccci.deployment.maven;
 
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.spi.ErrorHandler;
+import org.apache.log4j.spi.Filter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -10,6 +19,8 @@ import org.ccci.deployment.ApplicationLookup;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
 import org.ccci.deployment.Options;
+import org.ccci.util.ConsoleUtil;
+import org.ccci.util.logging.JuliToLog4jHandler;
 
 /**
  * Goal which deploys the configured application
@@ -83,14 +94,18 @@ public class DeployMojo
     /**
      * Whether to prompt for a password (requires keyboard interaction)
      * 
-     * @parameter expression="${deployments.promptPassword}" 
+     * @parameter 
+     *   expression="${deployments.promptPassword}"
+     *   default-value="true" 
      */
     private boolean promptPassword;
+    
+    
     
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
-        
+        setUpLogging();
         lookupPasswordIfNecessary();
 
         Options options = initializeOptions();
@@ -108,6 +123,34 @@ public class DeployMojo
         driver.deploy();
     }
 
+    private void setUpLogging()
+    {
+        org.apache.log4j.Logger root = org.apache.log4j.Logger.getRootLogger();
+        root.setLevel(org.apache.log4j.Level.INFO);
+        root.addAppender(new MavenPluginAppender(getLog()));
+        
+        org.apache.log4j.Logger jinteropLogger = org.apache.log4j.Logger.getLogger("org.jinterop");
+        jinteropLogger.setLevel(org.apache.log4j.Level.ERROR);
+        
+        redirectJavaUtilLoggingToLog4j();
+        
+        Logger.getLogger(DeployMojo.class.getName()).info("starting up deploy mojo");
+    }
+
+    private static void redirectJavaUtilLoggingToLog4j()
+    {
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        
+        for (Handler handler : rootLogger.getHandlers()) {
+            rootLogger.removeHandler(handler);
+        }
+        
+        Handler activeHandler = new JuliToLog4jHandler();
+        activeHandler.setLevel(Level.ALL);
+        
+        rootLogger.addHandler(activeHandler);
+        rootLogger.setLevel(Level.ALL);
+    }
 
     private Options initializeOptions() throws MojoFailureException
     {
@@ -149,31 +192,22 @@ public class DeployMojo
 
     private void lookupPasswordIfNecessary() throws MojoFailureException, MojoExecutionException
     {
-//        if (promptPassword)
-//        {
-//            try
-//            {
-//                password = ConsoleUtil.readPasswordFromInput();
-//            }
-//            catch (IOException e)
-//            {
-//                throw new MojoExecutionException("unable to read password", e);
-//            }
-//        }
-//        else 
         if (password == null)
         {
-            if (passwordEnvironmentVariableName == null)
-            {
-                getLog().warn("did not provide password and did not provide passwordEnvironmentVariableName");
-            }
-            else
+            if (passwordEnvironmentVariableName != null)
             {
                 getPasswordFromEnvironmentVariable();
             }
+            else if (promptPassword)
+            {
+                getPasswordFromConsolePrompt();
+            }
+            else
+            {
+                getLog().warn("using an empty password");
+            }
         }
     }
-
 
     private void getPasswordFromEnvironmentVariable() throws MojoFailureException
     {
@@ -184,6 +218,17 @@ public class DeployMojo
         }
     }
 
+    private void getPasswordFromConsolePrompt() throws MojoExecutionException
+    {
+        try
+        {
+            password = ConsoleUtil.readPasswordFromInput();
+        }
+        catch (IOException e)
+        {
+            throw new MojoExecutionException("unable to read password", e);
+        }
+    }
 
     private MojoFailureException buildFailureException(Exception e) throws MojoFailureException
     {
@@ -277,6 +322,16 @@ public class DeployMojo
     {
         this.application = application;
     }
-    
+
+    public boolean isPromptPassword()
+    {
+        return promptPassword;
+    }
+
+    public void setPromptPassword(boolean promptPassword)
+    {
+        this.promptPassword = promptPassword;
+    }
+
     
 }
