@@ -2,6 +2,7 @@ package org.ccci.deployment.maven;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.maven.plugin.logging.Log;
 
@@ -18,15 +19,15 @@ public class MavenPluginAppender extends AppenderSkeleton implements Appender
     @Override
     protected void append(LoggingEvent event)
     {
-        org.apache.log4j.Level level = event.getLevel();
+        Level level = event.getLevel();
         String content = event.getLoggerName() + " " + event.getMessage().toString();
         Throwable throwable = event.getThrowableInformation() == null ? null : event.getThrowableInformation().getThrowable();
         
-        if (level.toInt() < org.apache.log4j.Level.INFO.toInt())
+        if (level.toInt() < Level.INFO.toInt())
         {
             debug(content, throwable);
         }
-        else if (level.toInt() < org.apache.log4j.Level.ERROR.toInt())
+        else if (level.toInt() < Level.ERROR.toInt())
         {
             info(content, throwable);
         }

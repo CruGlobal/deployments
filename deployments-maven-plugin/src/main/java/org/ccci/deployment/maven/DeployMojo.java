@@ -129,15 +129,21 @@ public class DeployMojo
         root.setLevel(org.apache.log4j.Level.INFO);
         root.addAppender(new MavenPluginAppender(getLog()));
         
-        org.apache.log4j.Logger jinteropLogger = org.apache.log4j.Logger.getLogger("org.jinterop");
-        jinteropLogger.setLevel(org.apache.log4j.Level.ERROR);
+        reduceJInteropLogOutput();
         
         redirectJavaUtilLoggingToLog4j();
         
         Logger.getLogger(DeployMojo.class.getName()).info("starting up deploy mojo");
     }
 
-    private static void redirectJavaUtilLoggingToLog4j()
+    private void reduceJInteropLogOutput()
+    {
+        /* jinterop is very chatty... lots of INFO and WARN messages that are really debug info */
+        org.apache.log4j.Logger jinteropLogger = org.apache.log4j.Logger.getLogger("org.jinterop");
+        jinteropLogger.setLevel(org.apache.log4j.Level.ERROR);
+    }
+
+    private void redirectJavaUtilLoggingToLog4j()
     {
         Logger rootLogger = LogManager.getLogManager().getLogger("");
         
