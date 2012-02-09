@@ -8,10 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.spi.ErrorHandler;
-import org.apache.log4j.spi.Filter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -132,8 +128,6 @@ public class DeployMojo
         reduceJInteropLogOutput();
         
         redirectJavaUtilLoggingToLog4j();
-        
-        Logger.getLogger(DeployMojo.class.getName()).info("starting up deploy mojo");
     }
 
     private void reduceJInteropLogOutput()
