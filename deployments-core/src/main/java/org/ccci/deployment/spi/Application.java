@@ -34,4 +34,6 @@ public interface Application
      */
     boolean isDefault();
 
+    AppserverDeploymentConfiguration buildAppserverDeploymentConfiguration(Options options);
+
 }

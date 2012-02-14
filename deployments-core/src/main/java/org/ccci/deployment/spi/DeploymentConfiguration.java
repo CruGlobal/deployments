@@ -3,6 +3,7 @@ package org.ccci.deployment.spi;
 import java.util.List;
 import java.util.Set;
 
+import org.ccci.deployment.FailoverDatabaseControlInterface;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.RestartType;
 import org.ccci.deployment.WebappDeployment;
@@ -25,6 +26,8 @@ public interface DeploymentConfiguration
     public WebappControlInterface buildWebappControlInterface(Node node);
     
     public WebappDeployment buildWebappDeployment();
+
+    public FailoverDatabaseControlInterface buildFailoverDatabaseControl(Node node);
     
     public RestartType getDefaultRestartType();
 
@@ -43,4 +46,5 @@ public interface DeploymentConfiguration
     void closeResources();
 
     public int getWaitTimeBetweenNodes();
+
 }

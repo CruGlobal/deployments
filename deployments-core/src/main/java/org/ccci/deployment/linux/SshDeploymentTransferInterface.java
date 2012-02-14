@@ -166,5 +166,19 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     {
         return deployment.getDeployedWarName() + ".war";
     }
+    
+    public void transferAppserverInstallationToServer(String localFilePath, String stagingDirectory, String installationFileName)
+    {
+        try
+        {
+            session.executeSingleCommand("mkdir -p " + stagingDirectory);
+            session.sendFile(localFilePath, stagingDirectory, installationFileName, "0644");
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+
+    }
 
 }

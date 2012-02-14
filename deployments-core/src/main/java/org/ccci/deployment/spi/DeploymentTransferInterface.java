@@ -37,4 +37,8 @@ public interface DeploymentTransferInterface
     public void backupOldDeploymentAndActivateNewDeployment(WebappDeployment deployment, ExceptionBehavior exceptionBehavior);
     
     public void rollbackCurrentDeploymentAndActivateBackedUpDeployment(WebappDeployment deployment);
+
+    public void transferAppserverInstallationToServer(String localFilePath, 
+                                                      String stagingDirectory,
+                                                      String jbossInstallationPackedName);
 }

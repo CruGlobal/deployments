@@ -9,6 +9,7 @@ import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.ssh.RemoteExecutionFailureException;
 import org.ccci.ssh.SshSession;
+import org.ccci.ssh.SshSession.AsUser;
 
 import com.google.common.base.Throwables;
 
@@ -175,4 +176,33 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
         executeAdminShell("undeploy " + deployment.getDeployedWarName() + ".war --keep-content");
     }
 
+    @Override
+    public void updateInstallation(String stagingDirectory, 
+                                   String jbossInstallationPackedName,
+                                   String installerScriptName,
+                                   ExceptionBehavior nonfatalExceptionBehavior)
+    {
+        try
+        {
+            AsUser asJboss = session.as(requiredUser);
+            log.info("clearing old backup if necessary");
+            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/installation");
+            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/jboss-as-*");
+            log.info("unzipping installation archive");
+            /* '-q' means 'quiet', '-d' means target directory for extraction */
+            asJboss.executeSingleCommand("unzip -q " + stagingDirectory + "/" + jbossInstallationPackedName + " -d " + stagingDirectory);
+            log.info("stopping jboss");
+            shutdownServer();
+            log.info("running installer");
+            asJboss.executeSingleCommand("sh " + stagingDirectory + "/installation/update_jboss_installation.sh");
+            log.info("starting jboss");
+            startupServer(nonfatalExceptionBehavior);
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    
 }

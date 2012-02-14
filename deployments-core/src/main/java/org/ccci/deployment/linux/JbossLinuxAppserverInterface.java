@@ -181,4 +181,11 @@ public class JbossLinuxAppserverInterface implements AppserverInterface
         }
     }
 
+    @Override
+    public void updateInstallation(String stagingDirectory, String jbossInstallationPackedName,
+                                   String installerScriptName, ExceptionBehavior nonfatalExceptionBehavior)
+    {
+        throw new UnsupportedOperationException();
+    }
+
 }

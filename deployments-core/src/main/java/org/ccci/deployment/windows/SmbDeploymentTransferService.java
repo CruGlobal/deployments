@@ -160,6 +160,16 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         throws SmbException, MalformedURLException, UnknownHostException
     {
         SmbFile remoteDirectory = endpoint.createSmbPath(directory);
+        verifyExists(remoteDirectory);
+        
+        return packaging == Packaging.ARCHIVE ? 
+                endpoint.createChildFilePath(remoteDirectory, name + ".war") :
+                endpoint.createChildDirectoryPath(remoteDirectory, name);
+    }
+
+
+    private void verifyExists(SmbFile remoteDirectory) throws SmbException
+    {
         if (remoteDirectory.exists())
         {
             Preconditions.checkState(remoteDirectory.isDirectory());
@@ -168,10 +178,6 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         {
             remoteDirectory.mkdirs();
         }
-        
-        return packaging == Packaging.ARCHIVE ? 
-                endpoint.createChildFilePath(remoteDirectory, name + ".war") :
-                endpoint.createChildDirectoryPath(remoteDirectory, name);
     }
 
 
@@ -553,4 +559,54 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         }
     }
 
+
+    @Override
+    public void transferAppserverInstallationToServer(String localFilePath, String stagingDirectory,
+                                                      String installationPackedName)
+    {
+        try
+        {
+            createStagingDirectoryIfNecessary(stagingDirectory);
+            transferAppserverInstallationUsingLocalFilePath(localFilePath, stagingDirectory, installationPackedName);
+        }
+        catch (SmbException e)
+        {
+            throw Throwables.propagate(e);
+        }
+        catch (MalformedURLException e)
+        {
+            throw Throwables.propagate(e);
+        }
+        catch (UnknownHostException e)
+        {
+            throw Throwables.propagate(e);
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
+
+
+    private void createStagingDirectoryIfNecessary(String stagingDirectory) throws SmbException
+    {
+        SmbFile remoteDirectory = endpoint.createSmbPath(stagingDirectory);
+        verifyExists(remoteDirectory);
+    }
+
+    private void transferAppserverInstallationUsingLocalFilePath(String localFilePath, String stagingDirectory, String installationPackedName)
+    throws SmbException, MalformedURLException, UnknownHostException, IOException
+    {
+        String remoteTransferPathAsString = stagingDirectory + "/" + installationPackedName;
+        SmbFile remoteTransferPath = endpoint.createSmbPath(remoteTransferPathAsString); 
+        File localFile = new File(localFilePath);
+        assert localFile.exists();
+        assert localFile.isFile();
+        if (remoteTransferPath.exists())
+        {
+            remoteTransferPath.delete();
+        }
+        
+        copyFileToRemoteFile(localFile, remoteTransferPath);
+    }
 }

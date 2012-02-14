@@ -7,9 +7,11 @@ import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
+import org.ccci.ssh.SshSession.AsUser;
 import org.ccci.util.NotImplementedException;
 import org.ccci.windows.management.RemoteServiceControl;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
+import org.ccci.windows.wscript.RemoteShell;
 import org.jinterop.dcom.common.IJIAuthInfo;
 import org.jinterop.dcom.common.JIDefaultAuthInfoImpl;
 import org.jinterop.dcom.common.JIException;
@@ -121,12 +123,56 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
 
     private RemoteServiceControl buildControl()
     {
-        IJIAuthInfo credential = new JIDefaultAuthInfoImpl(
-            activeDirectoryCredential.getDomain(), 
-            activeDirectoryCredential.getUsername(), 
-            activeDirectoryCredential.getPassword());
+        IJIAuthInfo credential = makeIJIAuthInfo();
         RemoteServiceControl control = new RemoteServiceControl(node.getHostname(), credential, serviceName);
         return control;
     }
 
+    private IJIAuthInfo makeIJIAuthInfo()
+    {
+        IJIAuthInfo credential = new JIDefaultAuthInfoImpl(
+            activeDirectoryCredential.getDomain(), 
+            activeDirectoryCredential.getUsername(), 
+            activeDirectoryCredential.getPassword());
+        return credential;
+    }
+
+
+    @Override
+    public void updateInstallation(String stagingDirectory, 
+                                   String installationPackedName,
+                                   String installerScriptName, 
+                                   ExceptionBehavior nonfatalExceptionBehavior)
+    {
+        IJIAuthInfo credential = makeIJIAuthInfo();
+        RemoteShell remoteShell = new RemoteShell(node.getHostname(), credential);
+        
+        try
+        {
+            remoteShell.executeSingleCommand("echo foo");
+            
+            throw new NotImplementedException("robby, can you translate the below to windows-speak?");
+            
+            /*
+            AsUser asJboss = session.as(requiredUser);
+            log.info("clearing old backup if necessary");
+            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/installation");
+            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/jboss-as-*");
+            log.info("unzipping installation archive");
+            // '-q' means 'quiet', '-d' means target directory for extraction 
+            asJboss.executeSingleCommand("unzip -q " + stagingDirectory + "/" + jbossInstallationPackedName + " -d " + stagingDirectory);
+            log.info("stopping jboss");
+            shutdownServer();
+            log.info("running installer");
+            asJboss.executeSingleCommand("sh " + stagingDirectory + "/installation/update_jboss_installation.sh");
+            log.info("starting jboss");
+            startupServer(nonfatalExceptionBehavior);
+             * 
+             */
+        }
+        catch (IOException e)
+        {
+            throw Throwables.propagate(e);
+        }
+    }
 }
