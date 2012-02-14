@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.ccci.deployment.BasicWebappDeployment;
 import org.ccci.deployment.DeploymentFileDescription;
+import org.ccci.deployment.FailoverDatabaseControlInterface;
 import org.ccci.deployment.SpecificDirectoryDeploymentStorage;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.RestartType;
@@ -160,6 +161,12 @@ public class StaffServicesDeploymentConfiguration implements DeploymentConfigura
     public int getWaitTimeBetweenNodes()
     {
         return 30;
+    }
+
+    @Override
+    public FailoverDatabaseControlInterface buildFailoverDatabaseControl(Node node)
+    {
+        return null;
     }
 
 }

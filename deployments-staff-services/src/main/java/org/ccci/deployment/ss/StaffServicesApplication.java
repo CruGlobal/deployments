@@ -6,6 +6,7 @@ import org.ccci.deployment.InvalidEnvironmentException;
 import org.ccci.deployment.MissingParameterException;
 import org.ccci.deployment.Options;
 import org.ccci.deployment.spi.Application;
+import org.ccci.deployment.spi.AppserverDeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
 import org.testng.v6.Sets;
@@ -66,6 +67,12 @@ public class StaffServicesApplication implements Application
     public boolean isDefault()
     {
         return false;
+    }
+
+    @Override
+    public AppserverDeploymentConfiguration buildAppserverDeploymentConfiguration(Options options)
+    {
+        throw new UnsupportedOperationException();
     }
 
 }
