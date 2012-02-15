@@ -95,6 +95,12 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         {
             throw Throwables.propagate(e);
         }
+        catch (IllegalArgumentException e){
+        	if(e.getMessage().contains("no such service"))
+        		log.warn("Trying to shutdown non-existant service *** " + e.getMessage());
+        	else
+        		throw Throwables.propagate(e);
+        }
         finally
         {
             control.close();
