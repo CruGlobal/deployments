@@ -3,11 +3,11 @@ package org.ccci.deployment.windows;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
-import org.ccci.ssh.SshSession.AsUser;
 import org.ccci.util.NotImplementedException;
 import org.ccci.windows.management.RemoteServiceControl;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
@@ -24,6 +24,8 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
     private final String serviceName;
     private final Node node;
     private final ActiveDirectoryCredential activeDirectoryCredential;
+    
+    private Logger log = Logger.getLogger(getClass());
 
     public SimpleWindowsServiceAppserverInterface(Node node, String serviceName, ActiveDirectoryCredential activeDirectoryCredential)
     {
@@ -149,26 +151,18 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         
         try
         {
-            remoteShell.executeSingleCommand("echo foo");
-            
-            throw new NotImplementedException("robby, can you translate the below to windows-speak?");
-            
-            /*
-            AsUser asJboss = session.as(requiredUser);
             log.info("clearing old backup if necessary");
-            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/installation");
-            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/jboss-as-*");
+            remoteShell.executeSingleCommand("cd " + stagingDirectory);
+            remoteShell.executeSingleCommand("rd /s /q installation");
+            remoteShell.executeSingleCommand("rd /s /q jboss-as-*");
             log.info("unzipping installation archive");
-            // '-q' means 'quiet', '-d' means target directory for extraction 
-            asJboss.executeSingleCommand("unzip -q " + stagingDirectory + "/" + jbossInstallationPackedName + " -d " + stagingDirectory);
+            remoteShell.executeSingleCommand("%java_home%\\bin\\jar xf " + installationPackedName);
             log.info("stopping jboss");
             shutdownServer();
             log.info("running installer");
-            asJboss.executeSingleCommand("sh " + stagingDirectory + "/installation/update_jboss_installation.sh");
+            remoteShell.executeSingleCommand("installation\\update_jboss_installation.bat");
             log.info("starting jboss");
             startupServer(nonfatalExceptionBehavior);
-             * 
-             */
         }
         catch (IOException e)
         {
