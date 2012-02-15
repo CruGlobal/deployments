@@ -15,7 +15,7 @@ public interface AppserverInterface
     public void startupServer(ExceptionBehavior nonfatalExceptionBehavior);
 
     public void updateInstallation(String stagingDirectory, 
-                                   String jbossInstallationPackedName,
+                                   String installationPackedName,
                                    String installerScriptName, 
                                    ExceptionBehavior nonfatalExceptionBehavior);
     

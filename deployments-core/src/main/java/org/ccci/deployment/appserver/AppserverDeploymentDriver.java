@@ -1,7 +1,6 @@
 package org.ccci.deployment.appserver;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -10,7 +9,6 @@ import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.FailoverDatabaseControlInterface;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.Options;
-import org.ccci.deployment.linux.Jboss7JSWLinuxAppserverInterface;
 import org.ccci.deployment.spi.Application;
 import org.ccci.deployment.spi.AppserverDeploymentConfiguration;
 import org.ccci.deployment.spi.AppserverInterface;
@@ -18,14 +16,12 @@ import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
 import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.WebappControlInterface;
-import org.ccci.ssh.SshSession;
-import org.ccci.ssh.SshSession.AsUser;
 
 import com.google.common.base.Throwables;
 
 /**
- * The purpose of this class is to transfer a newly-configured jboss appserver
- * installation to the remote server(s) and to run the installer remotely.
+ * The purpose of this class is to transfer a newly-configured appserver
+ * installation to the remote server(s) and to run the appropriate installer remotely.
  * 
  * @author Matt Drees
  */
@@ -41,7 +37,7 @@ public class AppserverDeploymentDriver
 
     private final ExceptionBehavior nonfatalExceptionBehavior;
     
-    private final String jbossInstallationPackedName;
+    private final String installationPackedName;
 
     private String installerScriptName;
 
@@ -56,13 +52,13 @@ public class AppserverDeploymentDriver
         configuration = application.buildDeploymentConfiguration(options);
         appserverDeploymentConfiguration = application.buildAppserverDeploymentConfiguration(options);
         installerScriptName = appserverDeploymentConfiguration.getInstallerScriptName();
-        jbossInstallationPackedName = appserverDeploymentConfiguration.getInstallationFileName();
+        installationPackedName = appserverDeploymentConfiguration.getInstallationFileName();
         stagingDirectory = appserverDeploymentConfiguration.getStagingDirectory();
         
         sourceDirectory = options.sourceDirectory;
         if (sourceDirectory == null)
         {
-            throw new ConfigurationException("please specify 'sourceDirectory', containing the jboss installation archive to deploy");
+            throw new ConfigurationException("please specify 'sourceDirectory', containing the appserver installation archive to deploy");
         }
 
         this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
@@ -72,7 +68,7 @@ public class AppserverDeploymentDriver
     {
         try
         {
-            String localFilePath = sourceDirectory + "/" + jbossInstallationPackedName;
+            String localFilePath = sourceDirectory + "/" + installationPackedName;
 
             log.info("installation file: " + localFilePath);
 
@@ -89,7 +85,7 @@ public class AppserverDeploymentDriver
 
                 cautiouslyShutDownIfPossible(node, webappControlInterface);
                 flushFailoverDataIfNecessary(node);
-                updateJbossInstallation(stagingDirectory, node);
+                updateAppserverInstallation(stagingDirectory, node);
                 verifyNewDeploymentServingRequests(webappControlInterface);
                 prepareForFailover(node);
             }
@@ -112,7 +108,7 @@ public class AppserverDeploymentDriver
             
             DeploymentTransferInterface deploymentTransferInterface = configuration.connectDeploymentTransferInterface(node);
             
-            deploymentTransferInterface.transferAppserverInstallationToServer(localFilePath, stagingDirectory, jbossInstallationPackedName);
+            deploymentTransferInterface.transferAppserverInstallationToServer(localFilePath, stagingDirectory, installationPackedName);
         }
     }
 
@@ -202,14 +198,14 @@ public class AppserverDeploymentDriver
     }
     
 
-    private void updateJbossInstallation(String stagingDirectory, Node node)
+    private void updateAppserverInstallation(String stagingDirectory, Node node)
     {
         AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
         log.info("updating jboss installation on " + node);
         
         appserverInterface.updateInstallation(
             stagingDirectory, 
-            jbossInstallationPackedName, 
+            installationPackedName, 
             installerScriptName, 
             nonfatalExceptionBehavior);
         
