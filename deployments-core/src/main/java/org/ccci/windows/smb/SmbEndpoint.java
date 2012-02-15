@@ -36,6 +36,10 @@ public class SmbEndpoint
             }
             return smbFile;
         }
+        catch (SmbException e)
+        {
+            throw new RuntimeException("unable to create path " + path, e);
+        }
         catch (MalformedURLException e)
         {
             throw new IllegalArgumentException("invalid target: " + path, e);
