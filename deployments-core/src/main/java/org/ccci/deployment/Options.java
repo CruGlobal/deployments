@@ -116,5 +116,5 @@ public class Options
     @Parameter(
         names = {"--installerScript", "-is"}, 
         description = "the name of the installer script to use for appserver updates")
-    public String installerScriptName;
+    public String installerScript;
 }
