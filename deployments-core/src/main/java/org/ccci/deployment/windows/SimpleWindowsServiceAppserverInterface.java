@@ -2,6 +2,7 @@ package org.ccci.deployment.windows;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.ExceptionBehavior;
@@ -152,7 +153,7 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         try
         {
             log.info("clearing old backup if necessary");
-            remoteShell.executeSingleCommand("cd " + stagingDirectory);
+            remoteShell.executeSingleCommand("cd " + convertToWindowsPath(stagingDirectory));
             remoteShell.executeSingleCommand("rd /s /q installation");
             remoteShell.executeSingleCommand("rd /s /q jboss-as-*");
             log.info("unzipping installation archive");
@@ -168,5 +169,13 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         {
             throw Throwables.propagate(e);
         }
+    }
+
+    String convertToWindowsPath(String stagingDirectory)
+    {
+        //turn W$/tmp/wsapi-jboss-installation-work to W:\tmp\wsapi-jboss-installation-work
+        return stagingDirectory
+            .replaceFirst("^([A-Z])\\$", "$1:")
+            .replaceAll("/", Matcher.quoteReplacement("\\"));
     }
 }
