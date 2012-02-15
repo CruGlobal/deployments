@@ -7,12 +7,14 @@ public class RemoteExecutionFailureException extends RuntimeException
     public final int exitStatus;
     public final String output;
     public final String errorOutput;
+    public final String command;
 
-    public RemoteExecutionFailureException(int exitStatus, String output, String errorOutput)
+    public RemoteExecutionFailureException(String command, int exitStatus, String output, String errorOutput)
     {
-        super("Execution failed; exit status: " + exitStatus + ";\n" +
+        super("Execution failed for command '" + command + "'; exit status: " + exitStatus + ";\n" +
             "error output follows:\n" + errorOutput + 
             buildProgramOutputString(output));
+        this.command = command;
         this.exitStatus = exitStatus;
         this.output = output;
         this.errorOutput = errorOutput;

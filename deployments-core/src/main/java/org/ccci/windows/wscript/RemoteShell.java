@@ -60,7 +60,7 @@ public class RemoteShell
         
         if (exec.ExitCode() != 0)
         {
-            throw new RemoteExecutionFailureException(exec.ExitCode(), outputString, errString);
+            throw new RemoteExecutionFailureException(command, exec.ExitCode(), outputString, errString);
         }
         else
         {

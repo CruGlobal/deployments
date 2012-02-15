@@ -94,7 +94,7 @@ public class SshSession
             if (exitStatus == null)
                 log.warn("unable to determine exit status for command '" + command + "'");
             else if (exitStatus > 0)
-                throw new RemoteExecutionFailureException(exitStatus, output, errorOutput);
+                throw new RemoteExecutionFailureException(command, exitStatus, output, errorOutput);
             return output;
         }
         finally
