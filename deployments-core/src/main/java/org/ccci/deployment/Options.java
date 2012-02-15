@@ -110,5 +110,11 @@ public class Options
         names = {"--nonfatalExceptionBehavior", "-eb"}, 
         description = "whether nonfatal exceptions should cause the deployment to fail or should be logged but not halt the deployment. possible values: 'halt', 'log'.  Default is 'halt'",
         converter = ExceptionBehaviorConverter.class)
+        
     public ExceptionBehavior nonfatalExceptionBehavior = ExceptionBehavior.HALT;
+
+    @Parameter(
+        names = {"--installerScript", "-is"}, 
+        description = "the name of the installer script to use for appserver updates")
+    public String installerScriptName;
 }
