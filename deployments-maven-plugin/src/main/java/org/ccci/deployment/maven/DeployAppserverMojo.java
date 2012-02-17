@@ -103,7 +103,7 @@ public class DeployAppserverMojo
      * 
      * @parameter expression="${deployments.installerScript}"
      */
-    private boolean installerScript;
+    private String installerScript;
     
     
     
@@ -173,6 +173,7 @@ public class DeployAppserverMojo
         options.environment = environment;
         options.continuousIntegrationUrl = continuousIntegrationUrl;
         options.sourceDirectory = sourceDirectory;
+        options.installerScript = installerScript;
         
         if (application != null)
         {
@@ -186,7 +187,6 @@ public class DeployAppserverMojo
             }
         }
 
-        
         try
         {
             options.initializeDefaults();
