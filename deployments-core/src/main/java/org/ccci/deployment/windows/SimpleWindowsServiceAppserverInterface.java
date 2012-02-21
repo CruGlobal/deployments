@@ -9,6 +9,7 @@ import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.WebappDeployment;
 import org.ccci.deployment.spi.AppserverInterface;
+import org.ccci.ssh.RemoteExecutionFailureException;
 import org.ccci.util.NotImplementedException;
 import org.ccci.windows.management.RemoteServiceControl;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
@@ -25,6 +26,8 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
     private final String serviceName;
     private final Node node;
     private final ActiveDirectoryCredential activeDirectoryCredential;
+
+    String unxUtilsLocation = "C:\\\"Program Files\"\\UnxUtils\\usr\\local\\wbin";
     
     private Logger log = Logger.getLogger(getClass());
 
@@ -95,12 +98,6 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         {
             throw Throwables.propagate(e);
         }
-        catch (IllegalArgumentException e){
-        	if(e.getMessage().contains("no such service"))
-        		log.warn("Trying to shutdown non-existant service *** " + e.getMessage());
-        	else
-        		throw Throwables.propagate(e);
-        }
         finally
         {
             control.close();
@@ -158,16 +155,26 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         
         try
         {
-            log.info("clearing old backup if necessary");
-            remoteShell.executeSingleCommand("cd " + convertToWindowsPath(stagingDirectory));
-            remoteShell.executeSingleCommand("rd /s /q installation");
-            remoteShell.executeSingleCommand("rd /s /q jboss-as-*");
+            String stagingDirectoryWinPath = convertToWindowsPath(stagingDirectory);
+            cleanOldInstallations(remoteShell, stagingDirectoryWinPath);
             log.info("unzipping installation archive");
-            remoteShell.executeSingleCommand("%java_home%\\bin\\jar xf " + installationPackedName);
+            /* '-q' means 'quiet', '-d' means target directory for extraction */
+            remoteShell.executeSingleCommand(unxUtilsLocation + "\\unzip -q "  + stagingDirectoryWinPath + "\\" + installationPackedName + " -d " + stagingDirectoryWinPath);
             log.info("stopping jboss");
-            shutdownServer();
-            log.info("running installer");
-            remoteShell.executeSingleCommand("installation\\update_jboss_installation.bat");
+            try
+            {
+                shutdownServer();
+            }
+            catch (IllegalArgumentException e){
+                if(e.getMessage().contains("no such service"))
+                    log.warn("Trying to shutdown non-existant service *** " + e.getMessage());
+                else
+                    throw Throwables.propagate(e);
+            }
+            log.info("running installer (" + installerScriptName + ")");
+            String output = remoteShell.executeSingleCommand(stagingDirectoryWinPath + "\\installation\\" + installerScriptName);
+            log.info("installer output follows:");
+            log.info(output);
             log.info("starting jboss");
             startupServer(nonfatalExceptionBehavior);
         }
@@ -175,6 +182,25 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         {
             throw Throwables.propagate(e);
         }
+    }
+
+    private void cleanOldInstallations(RemoteShell remoteShell, String stagingDirectoryWinPath) throws IOException
+    {
+        log.info("clearing old backup if necessary");
+        try
+        {
+            remoteShell.executeSingleCommand("rd /s /q " + stagingDirectoryWinPath + "\\installation");
+        }
+        catch (RemoteExecutionFailureException e)
+        {
+            if (e.exitStatus == 2)
+            {
+                //directory doesn't exist; ignore
+            }
+            else throw e;
+        }
+        //using unixUtil's rm since windows' rd can't handle wildcards
+        remoteShell.executeSingleCommand(unxUtilsLocation + "\\rm --recursive --force " + stagingDirectoryWinPath + "\\jboss-as-*");
     }
 
     String convertToWindowsPath(String stagingDirectory)

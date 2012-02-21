@@ -270,9 +270,16 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
     }
 
 
-    private void copyFileToRemoteFile(File file, final SmbFile destinationFile) throws SmbException, IOException
+    private void copyFileToRemoteFile(File file, final SmbFile destinationFile) throws IOException
     {
-        destinationFile.createNewFile();
+        try
+        {
+            destinationFile.createNewFile();
+        }
+        catch (SmbException e)
+        {
+            throw new RuntimeException("unable to create file: " + destinationFile.getPath(), e);
+        }
         
         Files.copy(file, new OutputSupplier<OutputStream>()
         {

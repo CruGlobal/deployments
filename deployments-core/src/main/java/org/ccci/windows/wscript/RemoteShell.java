@@ -14,7 +14,7 @@ import com.google.common.base.Throwables;
 public class RemoteShell
 {
 
-    int globalSocketTimeout = (int) TimeUnit.SECONDS.toMillis(10);
+    int globalSocketTimeout = (int) TimeUnit.SECONDS.toMillis(45);
     private final JISession session;
     private WshShell wshShell;
     
