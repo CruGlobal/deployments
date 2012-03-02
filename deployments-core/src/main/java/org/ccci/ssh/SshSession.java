@@ -142,7 +142,7 @@ public class SshSession
 
         private String getSwitchUserPrefixIfNecessary(String requiredUser) throws IOException
         {
-            String username = SshSession.this.executeSingleCommand("id -un");
+            String username = SshSession.this.executeSingleCommand("id -un").trim();
             
             String prefix;
             if (username.equals(requiredUser))
