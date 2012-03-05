@@ -195,8 +195,8 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
             shutdownServer();
             log.info("running installer");
             asJboss.executeSingleCommand("sh " + stagingDirectory + "/installation/update_jboss_installation.sh");
-            log.info("starting jboss (except not)");
-//            startupServer(nonfatalExceptionBehavior);
+            log.info("starting jboss");
+            startupServer(nonfatalExceptionBehavior);
         }
         catch (IOException e)
         {
