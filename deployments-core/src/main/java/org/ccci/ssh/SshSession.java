@@ -43,7 +43,7 @@ public class SshSession
         connection.connect(verifier, (int) TimeUnit.SECONDS.toMillis(sshSocketConnectTimeout), 0);
         boolean success = connection.authenticateWithPassword(endpoint.getUsername(), endpoint.getPassword());
         if (!success)
-            throw new IOException("ssh password authentication to " + endpoint.getHostName() + "for user " + endpoint.getUsername() + " refused");
+            throw new IOException("ssh password authentication to " + endpoint.getHostName() + " for user " + endpoint.getUsername() + " refused");
     }
 
 
