@@ -169,10 +169,18 @@ public class SshDeploymentTransferInterface implements DeploymentTransferInterfa
     
     public void transferAppserverInstallationToServer(String localFilePath, String stagingDirectory, String installationFileName)
     {
+        String transferFilePath = remoteTransferDirectory + "/" + installationFileName + ".tmp";
         try
         {
-            session.executeSingleCommand("mkdir -p " + stagingDirectory);
-            session.sendFile(localFilePath, stagingDirectory, installationFileName, "0644");
+            session.sendFile(localFilePath, remoteTransferDirectory, installationFileName + ".tmp", "0644");
+            
+            session.as(requiredUser).executeSingleCommand("mkdir -p " + stagingDirectory);
+            copy(transferFilePath, stagingDirectory + "/" + installationFileName);
+
+            /* cleanup the transfer file, because future transfers may be executed by a different user
+             * who won't have permission to overwrite this transfer file
+             */
+            session.executeSingleCommand("rm " + transferFilePath);
         }
         catch (IOException e)
         {

@@ -221,7 +221,8 @@ public class AppserverDeploymentDriver
         
         LoadbalancerInterface loadbalancerInterface = configuration.buildLoadBalancerInterface();
         
-        int timeLimit = 30;
+        //TODO: this should be configurable
+        int timeLimit = 45;
         long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeLimit);
         
         while (true)
