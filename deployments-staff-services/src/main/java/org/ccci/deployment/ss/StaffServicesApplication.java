@@ -9,7 +9,8 @@ import org.ccci.deployment.spi.Application;
 import org.ccci.deployment.spi.AppserverDeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.windows.smb.ActiveDirectoryCredential;
-import org.testng.v6.Sets;
+
+import com.google.common.collect.Sets;
 
 public class StaffServicesApplication implements Application
 {
