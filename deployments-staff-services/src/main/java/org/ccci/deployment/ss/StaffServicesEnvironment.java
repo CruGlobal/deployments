@@ -18,6 +18,12 @@ public enum StaffServicesEnvironment
         buildA321(),
         buildProjectLead(),
         9180),
+    TEST(
+        "W$/Tomcat/instances/ss-inst", 
+        "Tomcat - Staff Services", 
+        buildA321(),
+        buildProjectLead(),
+        8180),
     STAGING(
         "W$/Tomcat/instances/ss-inst", 
         "Tomcat - Staff Services", 
