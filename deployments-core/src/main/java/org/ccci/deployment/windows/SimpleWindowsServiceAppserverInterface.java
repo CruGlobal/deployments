@@ -151,7 +151,7 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
                                    ExceptionBehavior nonfatalExceptionBehavior)
     {
         IJIAuthInfo credential = makeIJIAuthInfo();
-        RemoteShell remoteShell = new RemoteShell(node.getHostname(), credential);
+        RemoteShell remoteShell = new RemoteShell(node.getHostname(), credential, TimeUnit.MINUTES.toMillis(2));
         
         try
         {

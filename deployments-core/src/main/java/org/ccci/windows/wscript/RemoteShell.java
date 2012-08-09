@@ -14,14 +14,19 @@ import com.google.common.base.Throwables;
 public class RemoteShell
 {
 
-    int globalSocketTimeout = (int) TimeUnit.SECONDS.toMillis(45);
+    static int defaultGlobalSocketTimeout = (int) TimeUnit.SECONDS.toMillis(45);
     private final JISession session;
     private WshShell wshShell;
     
     public RemoteShell(String hostName, IJIAuthInfo credential)
     {
+        this(hostName, credential, defaultGlobalSocketTimeout);
+    }
+    
+    public RemoteShell(String hostName, IJIAuthInfo credential, long globalSocketTimeout)
+    {
         this.session = JISession.createSession(credential);
-        session.setGlobalSocketTimeout(globalSocketTimeout);
+        session.setGlobalSocketTimeout((int) globalSocketTimeout);
         
         try
         {
