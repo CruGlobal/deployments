@@ -61,7 +61,7 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
             long startTime = System.currentTimeMillis();
             while(!control.serviceIsStopped())
             {
-                int maxWait = 30;
+                int maxWait = 60;
                 if (System.currentTimeMillis() > startTime + TimeUnit.SECONDS.toMillis(maxWait))
                 {
                     throw new RuntimeException("service not stopped after " + maxWait + " seconds");
