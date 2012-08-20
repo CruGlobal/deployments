@@ -84,6 +84,12 @@ public enum StaffServicesEnvironment
         buildA331A332(),
         buildProjectLead(),
         9380),
+    SIEBEL_PRODUCTION(
+        "W$/Tomcat/instances/ss-inst-siebel-prod", 
+        "Tomcat - Staff Services - Siebel Prod", 
+        buildA331(),
+        buildProjectLead(),
+        9780),
     STAFFWEB_REBRANDING_TEST(
         "/Tomcat/instances/ss-inst-staffweb-rebranding", 
         "Tomcat - Staff Services - Rebranding", 
