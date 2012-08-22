@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.ConfigurationException;
+import org.ccci.deployment.DeploymentNotifier;
+import org.ccci.deployment.DeploymentNotifier.Type;
 import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.FailoverDatabaseControlInterface;
 import org.ccci.deployment.Node;
@@ -44,6 +46,8 @@ public class AppserverDeploymentDriver
     private String stagingDirectory;
 
     private AppserverDeploymentConfiguration appserverDeploymentConfiguration;
+
+    private final DeploymentNotifier notifier;
     
     public AppserverDeploymentDriver(Options options)
     {
@@ -62,12 +66,14 @@ public class AppserverDeploymentDriver
         }
 
         this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
+        this.notifier = new DeploymentNotifier(options, configuration);
     }
 
     public void deploy()
     {
         try
         {
+            notifier.sendNotificationEmail(Type.APPLICATION_SERVER);
             String localFilePath = sourceDirectory + "/" + installationPackedName;
 
             log.info("installation file: " + localFilePath);

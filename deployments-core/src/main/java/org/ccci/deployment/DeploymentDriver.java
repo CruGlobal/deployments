@@ -1,23 +1,16 @@
 package org.ccci.deployment;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.mail.MessagingException;
-
 import org.apache.log4j.Logger;
-import org.ccci.deployment.spi.Application;
+import org.ccci.deployment.DeploymentNotifier.Type;
 import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
 import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.LocalDeploymentStorage;
 import org.ccci.deployment.spi.WebappControlInterface;
-import org.ccci.util.mail.EmailAddress;
-import org.ccci.util.mail.MailMessage;
-import org.ccci.util.mail.MailMessageFactory;
-import org.ccci.util.strings.Strings;
 
 import com.google.common.base.Throwables;
 
@@ -27,43 +20,33 @@ public class DeploymentDriver
     public DeploymentDriver(Options options)
     {
         this.configuration = options.application.buildDeploymentConfiguration(options);
-        this.application = options.application;
-        this.environment = options.environment;
-        this.continuousIntegrationUrl = options.continuousIntegrationUrl;
-        this.factory = new MailMessageFactory("smtp1.ccci.org");
-        this.restartType = options.restartType;
+        this.restartType = options.restartType != null ? 
+                options.restartType : 
+                configuration.getDefaultRestartType();
         this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
+        this.notifier = new DeploymentNotifier(options, configuration);
     }
 
     final Logger log = Logger.getLogger(DeploymentDriver.class);
     
-    private final MailMessageFactory factory;
-    private final Application application;
     private final DeploymentConfiguration configuration;
-    private final String environment;
-    private final String continuousIntegrationUrl;
 
-    private RestartType restartType;
-    
+    private final RestartType restartType;
 
     private final ExceptionBehavior nonfatalExceptionBehavior;
+
+    private final DeploymentNotifier notifier;
     
     public void deploy()
     {
-        if (restartType == null)
-            restartType = configuration.getDefaultRestartType();
-
-        
         WebappDeployment deployment = configuration.buildWebappDeployment();
-        sendNotificationEmail(deployment);
-        
+        notifier.sendNotificationEmail(Type.WEBAPP);
         
         LocalDeploymentStorage localStorage = configuration.buildLocalDeploymentStorage();
         File deploymentLocation = localStorage.getDeploymentLocation();
         String type = deploymentLocation.isDirectory() ? "directory" : "file";
         log.info("deploying from " + type + " " + deploymentLocation);
 
-        
         try
         {
             deployToEachNode(deployment, localStorage);
@@ -206,50 +189,6 @@ public class DeploymentDriver
             {
                 throw Throwables.propagate(e);
             }
-        }
-    }
-
-    private void sendNotificationEmail(WebappDeployment deployment)
-    {
-        MailMessage mailMessage = factory.createApplicationMessage();
-        
-        for (EmailAddress address : configuration.listDeploymentNotificationRecipients())
-        {
-            mailMessage.addTo(address);
-        }
-        
-        List<Node> nodes = configuration.listNodes();
-        String nodeDescription = Strings.join(nodes, ",", " and ");
-        String subject = "deploying " + application.getName() + " to " + nodeDescription;
-        
-        String environmentDescription = Strings.capitalsAndUnderscoresToLabel(environment) ;
-        String body = "This is an automated email notifying you that in a few seconds " + application.getName() + 
-            " will be deployed to the "+ environmentDescription + " environment on " + nodeDescription + 
-            (restartType == RestartType.FULL_PROCESS_RESTART ? ", and any associated appservers will be restarted" : "") +
-            ".";
-        
-        if (continuousIntegrationUrl != null)
-        {
-            body += "\r\n" +
-            "For more information, visit " +
-            continuousIntegrationUrl;
-        }
-        
-        mailMessage.setMessage(subject, body);
-        mailMessage.setFrom(EmailAddress.valueOf("deployments-do-not-reply@ccci.org"));
-        
-        try
-        {
-            mailMessage.sendToAll();
-        }
-        catch (MessagingException e)
-        {
-            if (nonfatalExceptionBehavior == ExceptionBehavior.HALT)
-                throw Throwables.propagate(e);
-            else if (nonfatalExceptionBehavior == ExceptionBehavior.LOG)
-                log.error("unable to send email notification for deployment", e);
-            else
-                throw new AssertionError();
         }
     }
 
