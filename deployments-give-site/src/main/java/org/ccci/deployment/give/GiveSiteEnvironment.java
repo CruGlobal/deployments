@@ -98,17 +98,17 @@ public enum GiveSiteEnvironment
     
     private static List<Node> buildA21()
     {
-        return ImmutableList.of(new Node("a21", "twdssa21.net.ccci.org"));
+        return ImmutableList.of(new Node("twdssa21", "twdssa21.net.ccci.org"));
     }
     
     private static List<Node> buildA31()
     {
-        return ImmutableList.of(new Node("a31", "swdssa31.net.ccci.org"));
+        return ImmutableList.of(new Node("swdssa31", "swdssa31.net.ccci.org"));
     }
     
     private static List<Node> buildA32()
     {
-        return ImmutableList.of(new Node("a32", "swdssa32.net.ccci.org"));
+        return ImmutableList.of(new Node("swdssa32", "swdssa32.net.ccci.org"));
     }
     
     private static List<Node> buildA31A32()
@@ -119,12 +119,12 @@ public enum GiveSiteEnvironment
     
     private static List<Node> buildA41()
     {
-        return ImmutableList.of(new Node("a41", "pwdssa41.net.ccci.org"));
+        return ImmutableList.of(new Node("pwdssa41", "pwdssa41.net.ccci.org"));
     }
     
     private static List<Node> buildA42()
     {
-        return ImmutableList.of(new Node("a42", "pwdssa42.net.ccci.org"));
+        return ImmutableList.of(new Node("pwdssa42", "pwdssa42.net.ccci.org"));
     }
     
     private static List<Node> buildA41A42()
