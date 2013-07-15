@@ -86,7 +86,7 @@ public class GiveSiteDeploymentConfiguration implements DeploymentConfiguration
     {
         BasicWebappDeployment deployment = new BasicWebappDeployment();
         deployment.setName("give");
-        deployment.setDeployedWarName("give");
+        deployment.setDeployedWarName("ROOT");
         deployment.setPackaging(Packaging.EXPLODED);
         deployment.setDeploymentFileDescription(getConfigFileDescriptor());
         return deployment;
