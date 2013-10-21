@@ -23,7 +23,6 @@
     <module>deployments-maven-plugin</module>
     <module>deployments-ant-task</module>
     <module>deployments-command-line</module>
-    <module>deployments-give-site</module>
   </modules> 
       
   <properties>
