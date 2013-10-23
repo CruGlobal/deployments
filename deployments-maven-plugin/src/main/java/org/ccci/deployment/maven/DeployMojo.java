@@ -31,21 +31,21 @@ public class DeployMojo
     /**
      * The name of the environment variable that contains the password to use for deployment.
      * 
-     * @parameter property="deployments.passwordEnvironmentVariableName" 
+     * @parameter expression="${deployments.passwordEnvironmentVariableName}" 
      */
     private String passwordEnvironmentVariableName;
 
     /**
      * The password to use for transfer & service restarts
      * 
-     * @parameter property="deployments.password" 
+     * @parameter expression="${deployments.password}" 
      */
     private String password;
     
     /**
      * The username to use for for transfer & service restarts
      * 
-     * @parameter property="deployments.username" 
+     * @parameter expression="${deployments.username}" 
      */
     private String username;
     
@@ -54,7 +54,7 @@ public class DeployMojo
      * Which environment (dev, staging, production, etc) to deploy to. Each application defines its own set of possible environments.
      * 
      * @required
-     * @parameter property="deployments.environment" 
+     * @parameter expression="${deployments.environment}" 
      */
     private String environment;
     
@@ -62,7 +62,7 @@ public class DeployMojo
     /**
      * the url for the continuous integration server running this deployment
      * 
-     * @parameter property="deployments.continuousIntegrationUrl" 
+     * @parameter expression="${deployments.continuousIntegrationUrl}" 
      */
     private String continuousIntegrationUrl;
     
@@ -70,14 +70,14 @@ public class DeployMojo
     /**
      * which directory contains the application to deploy
      * 
-     * @parameter property="deployments.sourceDirectory" 
+     * @parameter expression="${deployments.sourceDirectory}" 
      */
     private File sourceDirectory;
     
     /**
      * the Active Directory domain for the username, if this is a deployment to a windows machine
      * 
-     * @parameter property="deployments.domain" 
+     * @parameter expression="${deployments.domain}" 
      */
     private String domain;
     
@@ -86,7 +86,7 @@ public class DeployMojo
      * Optional if a default application is on the classpath.
      * This option is mutually exclusive with {@code #applicationConfiguration}.
      * 
-     * @parameter property="deployments.application" 
+     * @parameter expression="${deployments.application}" 
      */
     private String application;
 
@@ -94,7 +94,7 @@ public class DeployMojo
      * specifies the location of a yaml deployment configuration file.
      * This option is mutually exclusive with {@code #applicaton}.
      *
-     * @parameter property="deployments.applicationConfiguration"
+     * @parameter expression="${deployments.applicationConfiguration}"
      */
     private File applicationConfiguration;
     
@@ -102,7 +102,7 @@ public class DeployMojo
      * Whether to prompt for a password (requires keyboard interaction)
      * 
      * @parameter 
-     *   property="deployments.promptPassword"
+     *   expression="${deployments.promptPassword}"
      *   default-value="true" 
      */
     private boolean promptPassword;

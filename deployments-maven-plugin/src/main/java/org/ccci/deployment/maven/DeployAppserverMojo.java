@@ -32,21 +32,21 @@ public class DeployAppserverMojo
     /**
      * The name of the environment variable that contains the password to use for deployment.
      * 
-     * @parameter property="deployments.passwordEnvironmentVariableName" 
+     * @parameter expression="${deployments.passwordEnvironmentVariableName}" 
      */
     private String passwordEnvironmentVariableName;
 
     /**
      * The password to use for transfer & service restarts
      * 
-     * @parameter property="deployments.password" 
+     * @parameter expression="${deployments.password}" 
      */
     private String password;
     
     /**
      * The username to use for for transfer & service restarts
      * 
-     * @parameter property="deployments.username" 
+     * @parameter expression="${deployments.username}" 
      */
     private String username;
     
@@ -55,7 +55,7 @@ public class DeployAppserverMojo
      * Which environment (dev, staging, production, etc) to deploy to. Each application defines its own set of possible environments.
      * 
      * @required
-     * @parameter property="deployments.environment" 
+     * @parameter expression="${deployments.environment}" 
      */
     private String environment;
     
@@ -63,7 +63,7 @@ public class DeployAppserverMojo
     /**
      * the url for the continuous integration server running this deployment
      * 
-     * @parameter property="deployments.continuousIntegrationUrl" 
+     * @parameter expression="${deployments.continuousIntegrationUrl}" 
      */
     private String continuousIntegrationUrl;
     
@@ -71,21 +71,21 @@ public class DeployAppserverMojo
     /**
      * which directory contains the application to deploy
      * 
-     * @parameter property="deployments.sourceDirectory" 
+     * @parameter expression="${deployments.sourceDirectory}" 
      */
     private File sourceDirectory;
     
     /**
      * the Active Directory domain for the username, if this is a deployment to a windows machine
      * 
-     * @parameter property="deployments.domain" 
+     * @parameter expression="${deployments.domain}" 
      */
     private String domain;
     
     /**
      * which web application to deploy.  Optional if a default application is on the classpath.
      * 
-     * @parameter property="deployments.application" 
+     * @parameter expression="${deployments.application}" 
      */
     private String application;
     
@@ -93,7 +93,7 @@ public class DeployAppserverMojo
      * Whether to prompt for a password (requires keyboard interaction)
      * 
      * @parameter 
-     *   property="deployments.promptPassword"
+     *   expression="${deployments.promptPassword}"
      *   default-value="true" 
      */
     private boolean promptPassword;
@@ -101,7 +101,7 @@ public class DeployAppserverMojo
     /**
      * The name of the installer script to use for appserver updates
      * 
-     * @parameter property="deployments.installerScript"
+     * @parameter expression="${deployments.installerScript}"
      */
     private String installerScript;
     
