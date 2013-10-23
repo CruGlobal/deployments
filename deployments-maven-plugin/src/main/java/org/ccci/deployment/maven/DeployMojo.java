@@ -12,6 +12,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ccci.deployment.ApplicationLookup;
+import org.ccci.deployment.BasicApplicationBuilder;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
 import org.ccci.deployment.Options;
@@ -81,11 +82,21 @@ public class DeployMojo
     private String domain;
     
     /**
-     * which web application to deploy.  Optional if a default application is on the classpath.
+     * which web application to deploy.
+     * Optional if a default application is on the classpath.
+     * This option is mutually exclusive with {@code #applicationConfiguration}.
      * 
      * @parameter expression="${deployments.application}" 
      */
     private String application;
+
+    /**
+     * specifies the location of a yaml deployment configuration file.
+     * This option is mutually exclusive with {@code #applicaton}.
+     *
+     * @parameter expression="${deployments.applicationConfiguration}"
+     */
+    private File applicationConfiguration;
     
     /**
      * Whether to prompt for a password (requires keyboard interaction)
@@ -164,7 +175,13 @@ public class DeployMojo
         options.environment = environment;
         options.continuousIntegrationUrl = continuousIntegrationUrl;
         options.sourceDirectory = sourceDirectory;
-        
+
+        if (application != null && applicationConfiguration != null)
+        {
+            throw new MojoFailureException(
+                "parameters 'application' and 'applicationConfiguration' are mutually exclusive");
+        }
+
         if (application != null)
         {
             try
@@ -177,6 +194,17 @@ public class DeployMojo
             }
         }
 
+        else if (applicationConfiguration != null)
+        {
+            try
+            {
+                options.application = new BasicApplicationBuilder().buildFrom(applicationConfiguration);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw buildFailureException(e);
+            }
+        }
         
         try
         {
@@ -214,7 +242,7 @@ public class DeployMojo
         password = System.getenv(passwordEnvironmentVariableName);
         if (password == null)
         {
-            throw new MojoFailureException("Unable to get password from environment varible " + passwordEnvironmentVariableName);
+            throw new MojoFailureException("Unable to get password from environment variable " + passwordEnvironmentVariableName);
         }
     }
 

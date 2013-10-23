@@ -1,5 +1,8 @@
-package org.ccci.deployment;
+package org.ccci.deployment.basic;
 
+import org.ccci.deployment.DeploymentFileDescription;
+import org.ccci.deployment.Version;
+import org.ccci.deployment.WebappDeployment;
 import org.ccci.util.NotImplementedException;
 
 public class BasicWebappDeployment implements WebappDeployment
