@@ -361,5 +361,11 @@ public class DeployMojo
         this.promptPassword = promptPassword;
     }
 
-    
+    public File getApplicationConfiguration() {
+        return applicationConfiguration;
+    }
+
+    public void setApplicationConfiguration(File applicationConfiguration) {
+        this.applicationConfiguration = applicationConfiguration;
+    }
 }
