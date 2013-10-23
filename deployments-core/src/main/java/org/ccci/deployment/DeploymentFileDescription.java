@@ -4,6 +4,11 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+/**
+ * describes which files in an exploded deployment need to be treated specially
+ *
+ * Only applicable for {@link WebappDeployment.Packaging#EXPLODED} deployments
+ */
 public class DeploymentFileDescription
 {
 
@@ -29,7 +34,8 @@ public class DeploymentFileDescription
     /**
      * This path will be moved (not copied) from the old deployment to the
      * new deployment.  This is so log files can be preserved, but the deployment
-     * process will not copy log files, which would take a long time.
+     * process will not copy log files, which would take a long time and use disk
+     * space that we might not have.
      * 
      * If null, log file moving will not be performed.
      */
