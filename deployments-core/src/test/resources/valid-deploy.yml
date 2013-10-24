@@ -5,8 +5,8 @@ applicationName: Budget Tool
 
 deployment:
   name: budget
-  explodedPackaging:
-    deploymentSpecificPaths:
+  packaging: !exploded
+    retain:
       - /WEB-INF/casLogoutRegistry.ser
       - /WEB-INF/loggedInUsersFw.ser
       - /WEB-INF/classes/Dbio.properties
@@ -15,7 +15,7 @@ deployment:
       - /WEB-INF/classes/WebMacro.properties
       - /WEB-INF/classes/admins.yml
       - /WEB-INF/classes/password.yml
-    ignoredPaths:
+    ignore:
       - /WEB-INF/logs
 
 waitTimeBetweenNodes: 30

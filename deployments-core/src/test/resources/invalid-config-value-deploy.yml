@@ -9,8 +9,7 @@ applicationName:
 
 deployment:
   name: budget
-  # this is ok
-  explodedPackaging:
+  packaging: !exploded
 
 deploymentVerification:
   ping:

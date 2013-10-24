@@ -8,7 +8,7 @@ aplicationName: budget
 
 deployment:
   name: budget
-  explodedPackaging:
+  packaging: !exploded
 
 deploymentVerification:
   ping:

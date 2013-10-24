@@ -15,7 +15,9 @@ import org.ccci.deployment.basic.StaticConfig;
 import org.ccci.util.mail.EmailAddress;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
@@ -95,7 +97,10 @@ public class BasicApplicationBuilder {
     }
 
     private BasicApplicationConfig parse(InputStream applicationConfigurationStream, String location) {
-        Yaml yaml = new Yaml();
+        Constructor constructor = new Constructor();
+        constructor.addTypeDescription(new TypeDescription(ExplodedPackaging.class, "!exploded"));
+        constructor.addTypeDescription(new TypeDescription(ArchivePackaging.class, "!archive"));
+        Yaml yaml = new Yaml(constructor);
         yaml.setBeanAccess(BeanAccess.FIELD);
         try {
             return yaml.loadAs(applicationConfigurationStream, BasicApplicationConfig.class);
@@ -231,10 +236,11 @@ public class BasicApplicationBuilder {
         deployment.setName(config.deployment.name);
         deployment.setDeployedWarName(config.deployment.name);
 
-        if (config.deployment.explodedPackaging != null)
+        if (config.deployment.packaging instanceof ExplodedPackaging)
         {
+            ExplodedPackaging packaging = (ExplodedPackaging) config.deployment.packaging;
             deployment.setPackaging(WebappDeployment.Packaging.EXPLODED);
-            deployment.setDeploymentFileDescription(buildDeploymentFileDescription(config));
+            deployment.setDeploymentFileDescription(buildDeploymentFileDescription(packaging));
         }
         else
         {
@@ -243,11 +249,11 @@ public class BasicApplicationBuilder {
         return deployment;
     }
 
-    private DeploymentFileDescription buildDeploymentFileDescription(BasicApplicationConfig config) {
+    private DeploymentFileDescription buildDeploymentFileDescription(ExplodedPackaging packaging) {
         DeploymentFileDescription description = new DeploymentFileDescription();
-        description.getDeploymentSpecificPaths().addAll(config.deployment.explodedPackaging.deploymentSpecificPaths);
-        description.getIgnoredPaths().addAll(config.deployment.explodedPackaging.ignoredPaths);
-        description.setLogPath(config.deployment.explodedPackaging.logPath);
+        description.getDeploymentSpecificPaths().addAll(packaging.retain);
+        description.getIgnoredPaths().addAll(packaging.ignore);
+        description.setLogPath(packaging.doNotCopy);
         return description;
     }
 
@@ -284,14 +290,35 @@ public class BasicApplicationBuilder {
         String name;
 
         @Valid
-        ExplodedPackaging explodedPackaging;
+        @NotNull
+        Packaging packaging;
     }
 
-    private static class ExplodedPackaging {
-        List<String> deploymentSpecificPaths = Collections.emptyList();
-        List<String> ignoredPaths = Collections.emptyList();
-        String logPath;
+    private static abstract class Packaging {
     }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class ExplodedPackaging extends Packaging {
+        /* note: snakeYaml requires both of these constructors. */
+        /** this is used if the tag has one or more attributes defined */
+        public ExplodedPackaging() {
+        }
+        /** this is used if the tag has no attributes defined */
+        public ExplodedPackaging(String ignored) {
+        }
+
+        List<String> retain = Collections.emptyList();
+        List<String> ignore = Collections.emptyList();
+        String doNotCopy;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class ArchivePackaging extends Packaging {
+        /** see notes on ExplodedPackaging constructors */
+        public ArchivePackaging(String ignored) {
+        }
+    }
+
 
     private static class DeploymentVerification {
         @NotNull
