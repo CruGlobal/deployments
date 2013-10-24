@@ -11,6 +11,9 @@ import org.ccci.windows.smb.ActiveDirectoryCredential;
 import java.util.Map;
 
 /**
+ * This is an {@link Application} implementation that should work for most applications,
+ * and can be used by defining a Yaml configuration file instead of a custom java implementation of {@code Application}.
+ *
  * @author Matt Drees
  */
 public class BasicApplication implements Application {

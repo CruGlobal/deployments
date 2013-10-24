@@ -30,6 +30,7 @@ import java.util.Set;
 public class BasicApplicationBuilder {
 
     /**
+     * Builds a {@link BasicApplication} from a given yml configuration file
      *
      * @throws  IllegalArgumentException if the configuration file is invalid
      */
