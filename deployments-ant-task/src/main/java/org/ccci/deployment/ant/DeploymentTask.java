@@ -10,6 +10,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.ccci.deployment.ApplicationConverter;
 import org.ccci.deployment.ApplicationLookup;
+import org.ccci.deployment.BasicApplicationBuilder;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentDriver;
 import org.ccci.deployment.Options;
@@ -90,6 +91,18 @@ public class DeploymentTask extends Task
         try
         {
             options.application = new ApplicationLookup().lookupApplication(application);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new BuildException(e.getMessage());
+        }
+    }
+
+    public void setApplicationConfiguration(File applicationConfiguration)
+    {
+        try
+        {
+            options.application = new BasicApplicationBuilder().buildFrom(applicationConfiguration);
         }
         catch (IllegalArgumentException e)
         {
