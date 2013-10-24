@@ -83,11 +83,16 @@ public class PageMatcher
                     {
                         return matchPage(response, successPattern, regularExpression, pageName);
                     }
+                    else if (statusLine.getStatusCode() == 404)
+                        log.debug("received 404; continuing to try to connect");
+                    else if(statusLine.getStatusCode() == 400 && statusLine.getReasonPhrase().contains("No Host matches server name"))
+                    {
+                        // Sometimes Tomcat responds with a 400 'No Host matches server name <hostname>' when
+                        // the webapp is still loading.
+                        log.debug("received 400 'No Host matches'; continuing to try to connect");
+                    }
                     else
-                        if (statusLine.getStatusCode() != 404)
-                            throw new RuntimeException(pageName + " not available; status line: " + statusLine);
-                        else
-                            log.debug("received 404; continuing to try to connect");
+                        throw new RuntimeException(pageName + " not available; status line: " + statusLine);
                 }
                 finally
                 //free up http connection
