@@ -252,14 +252,14 @@ public class BasicApplicationBuilder {
     }
 
 
-    public static class BasicApplicationConfig {
-        @NotNull
+    private static class BasicApplicationConfig {
+        @NotBlank
         String type;
 
-        @NotNull
+        @NotBlank
         String os;
 
-        @NotNull
+        @NotBlank
         String applicationName;
 
         @NotNull
@@ -280,7 +280,7 @@ public class BasicApplicationBuilder {
     }
 
     private static class DeploymentConfig {
-        @NotNull
+        @NotBlank
         String name;
 
         @Valid
@@ -312,7 +312,6 @@ public class BasicApplicationBuilder {
     }
 
     private static class Environment {
-
         @NotBlank
         String appserverBasePath;
 
@@ -336,5 +335,4 @@ public class BasicApplicationBuilder {
         @NotBlank
         String hostname;
     }
-
 }

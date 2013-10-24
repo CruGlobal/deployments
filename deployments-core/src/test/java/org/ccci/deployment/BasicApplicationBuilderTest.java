@@ -52,8 +52,8 @@ public class BasicApplicationBuilderTest {
                 containsString("invalid-config-value-deploy.yml"),
 
                 containsString("environments[test].port: must be less than or equal to 65535 (value is 84800)"),
-                containsString("applicationName: may not be null"),
-                containsString("os: may not be null"),
+                containsString("applicationName: may not be empty"),
+                containsString("os: may not be empty"),
                 containsString("environments[test].nodes[0].name: may not be empty (value is  )"),
                 containsString("deploymentVerification.ping.secondsBeforeTimeout: must be greater than or equal to 0 (value is -1)")
             ));
