@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.typeCompatibleWith;
 import static org.testng.Assert.*;
 
 import com.google.common.io.Resources;
+import org.ccci.deployment.basic.BasicApplication;
 import org.testng.annotations.Test;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -28,7 +29,16 @@ public class BasicApplicationBuilderTest {
     BasicApplicationBuilder builder = new BasicApplicationBuilder();
 
     @Test
-    public void testInvalidConfigValue()
+    public void testValidConfig()
+    {
+        URL validConfig = Resources.getResource(getClass(), "/valid-deploy.yml");
+        BasicApplication basicApplication = builder.buildFrom(validConfig);
+
+        assertThat(basicApplication.getName(), is("Budget Tool"));
+    }
+
+        @Test
+    public void testInvalidConfigValues()
     {
         URL invalidConfig = Resources.getResource(getClass(), "/invalid-config-value-deploy.yml");
         try {
@@ -68,8 +78,6 @@ public class BasicApplicationBuilderTest {
         }
         catch (Exception expected)
         {
-            expected.printStackTrace();
-
             assertThat(expected, instanceOf(IllegalArgumentException.class));
             assertThat(expected.getMessage(), containsString("invalid-structure-deploy.yml"));
 

@@ -109,6 +109,8 @@ public class BasicApplicationBuilder {
 
     private void validate(BasicApplicationConfig config, String location) {
         Set<ConstraintViolation<BasicApplicationConfig>> constraintViolations = validator.validate(config);
+        if (constraintViolations.isEmpty())
+            return;
 
         ConstraintViolationException cvException = new ConstraintViolationException(removeConstraintViolationTypeParameter(constraintViolations));
 

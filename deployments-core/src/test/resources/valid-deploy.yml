@@ -1,0 +1,84 @@
+type: tomcat
+os: windows
+
+applicationName: Budget Tool
+
+deployment:
+  name: budget
+  explodedPackaging:
+    deploymentSpecificPaths:
+      - /WEB-INF/casLogoutRegistry.ser
+      - /WEB-INF/loggedInUsersFw.ser
+      - /WEB-INF/classes/Dbio.properties
+      - /WEB-INF/classes/log4j.properties
+      - /WEB-INF/classes/servlets.properties
+      - /WEB-INF/classes/WebMacro.properties
+      - /WEB-INF/classes/admins.yml
+      - /WEB-INF/classes/password.yml
+    ignoredPaths:
+      - /WEB-INF/logs
+
+waitTimeBetweenNodes: 30
+
+deploymentVerification:
+  ping:
+    path: /budget/green.html
+    expectedContentRegex: .*OK.*
+    secondsBeforeTimeout: 60
+
+environments:
+  test: &typicalEnvironment
+    appserverBasePath: W$/Tomcat/instances/fsg-inst
+    serviceName: Tomcat - FSG
+    nodes:
+      - name: a321
+        hostname: hart-a321.net.ccci.org
+    deploymentSubscribers:
+      - matt.drees@cru.org
+    port: 8480
+
+  stage1:
+    <<: *typicalEnvironment
+    nodes:
+      - &a331
+        name: a331
+        hostname: hart-a331.net.ccci.org
+
+  stage2:
+    <<: *typicalEnvironment
+    nodes:
+      - &a332
+        name: a332
+        hostname: hart-a332.net.ccci.org
+
+  staging:
+    <<: *typicalEnvironment
+    nodes:
+      - *a331
+      - *a332
+
+  prod1:
+    <<: *typicalEnvironment
+    nodes:
+      - &a341
+        name: a341
+        hostname: hart-a341.net.ccci.org
+    deploymentSubscribers: &productionSubscribers
+      - matt.drees@cru.org
+      - steve.bratton@cru.org
+      - luis.rodriguez@cru.org
+
+  prod2:
+    <<: *typicalEnvironment
+    nodes:
+      - &a342
+        name: a342
+        hostname: hart-a342.net.ccci.org
+    deploymentSubscribers: *productionSubscribers
+
+  production:
+    <<: *typicalEnvironment
+    nodes:
+      - *a341
+      - *a342
+    deploymentSubscribers: *productionSubscribers
