@@ -1,0 +1,27 @@
+
+type: tomcat
+
+os: windows
+
+#typo
+aplicationName: budget
+
+deployment:
+  name: budget
+  explodedPackaging:
+
+deploymentVerification:
+  ping:
+    path: /budget/green.html
+    expectedContentRegex: .*OK.*
+    secondsBeforeTimeout: 1
+
+#another typo; snakeyaml wont report it though; it dies on the first parse failure
+environment:
+  test:
+    appserverBasePath: W$/Tomcat/instances/fsg-inst
+    serviceName: Tomcat - FSG
+    nodes:
+      - name: a321
+        hostname: hart-a321.net.ccci.org
+    port: &standardPort 8480

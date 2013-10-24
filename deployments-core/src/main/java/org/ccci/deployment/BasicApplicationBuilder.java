@@ -12,14 +12,28 @@ import org.ccci.deployment.basic.BasicWebappDeployment;
 import org.ccci.deployment.basic.OS;
 import org.ccci.deployment.basic.PingConfig;
 import org.ccci.deployment.basic.StaticConfig;
-import org.ccci.deployment.spi.Application;
 import org.ccci.util.mail.EmailAddress;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,42 +43,114 @@ import java.util.Set;
  */
 public class BasicApplicationBuilder {
 
+    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
     /**
      * Builds a {@link BasicApplication} from a given yml configuration file
      *
      * @throws  IllegalArgumentException if the configuration file is invalid
      */
-    public Application buildFrom(File applicationConfiguration) {
+    public BasicApplication buildFrom(File applicationConfiguration) {
         Preconditions.checkNotNull(applicationConfiguration);
         Preconditions.checkArgument(applicationConfiguration.exists(), applicationConfiguration + " does not exist");
         Preconditions.checkArgument(applicationConfiguration.isFile(), applicationConfiguration + " is not a file");
 
-        return parseAndBuildBasicApplication(applicationConfiguration);
-    }
-
-    private Application parseAndBuildBasicApplication(File applicationConfiguration) {
-
-        BasicApplicationConfig config = parse(applicationConfiguration);
-        return buildFromConfig(config);
-    }
-
-    private BasicApplicationConfig parse(File applicationConfiguration) {
-        Yaml yaml = new Yaml();
-        yaml.setBeanAccess(BeanAccess.FIELD);
         FileInputStream inputStream;
         try {
             inputStream = new FileInputStream(applicationConfiguration);
         } catch (FileNotFoundException e) {
             throw new AssertionError(applicationConfiguration + " was checked to exist");
         }
-        try
-        {
-            return yaml.loadAs(inputStream, BasicApplicationConfig.class);
+
+        return parseValidateAndBuild(inputStream, applicationConfiguration.toString());
+    }
+
+    /**
+     * Similar to {@link #buildFrom(File)}, except that a generic URL can be used
+     */
+    public BasicApplication buildFrom(URL applicationConfiguration) {
+        Preconditions.checkNotNull(applicationConfiguration);
+
+        InputStream inputStream;
+        try {
+            inputStream = applicationConfiguration.openStream();
+        } catch (IOException e) {
+            throw new RuntimeException("cannot open " + applicationConfiguration, e);
         }
-        finally
-        {
-            Closeables.closeQuietly(inputStream);
+
+        return parseValidateAndBuild(inputStream, applicationConfiguration.toString());
+    }
+
+
+    private BasicApplication parseValidateAndBuild(InputStream applicationConfigurationStream, String location) {
+        BasicApplicationConfig config;
+        try {
+            config = parse(applicationConfigurationStream, location);
+        } finally {
+            Closeables.closeQuietly(applicationConfigurationStream);
         }
+
+        validate(config, location);
+        return buildFromConfig(config);
+    }
+
+    private BasicApplicationConfig parse(InputStream applicationConfigurationStream, String location) {
+        Yaml yaml = new Yaml();
+        yaml.setBeanAccess(BeanAccess.FIELD);
+        try {
+            return yaml.loadAs(applicationConfigurationStream, BasicApplicationConfig.class);
+        }
+        catch (YAMLException e)
+        {
+            throw new IllegalArgumentException("unable to parse config from " + location, e);
+        }
+
+    }
+
+    private void validate(BasicApplicationConfig config, String location) {
+        Set<ConstraintViolation<BasicApplicationConfig>> constraintViolations = validator.validate(config);
+
+        ConstraintViolationException cvException = new ConstraintViolationException(removeConstraintViolationTypeParameter(constraintViolations));
+
+        throw new IllegalArgumentException(composeViolationMessage(constraintViolations, location), cvException);
+    }
+
+    /**
+     * The java compiler makes it difficult to convert a `Set<Foo<Bar>>` to a `Set<Foo<?>>`,
+     * even if you know it is safe.
+     *
+     * Oddly, to do this, you have to cast to `Set<?>` first and then cast to `Set<Foo<?>>`.
+     * Not sure if there's a better workaround.
+     *
+     * ConstraintViolation methods never use the type parameter as a method argument, so this is safe.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> Set<ConstraintViolation<?>> removeConstraintViolationTypeParameter(Set<ConstraintViolation<T>> constraintViolations) {
+        return (Set<ConstraintViolation<?>>) (Set<?>) constraintViolations;
+    }
+
+    private String composeViolationMessage(
+        Set<ConstraintViolation<BasicApplicationConfig>> constraintViolations,
+        String location) {
+        StringBuilder builder = new StringBuilder("invalid configuration: (");
+        builder.append(location);
+        builder.append(")");
+        for (ConstraintViolation<BasicApplicationConfig> constraintViolation : constraintViolations) {
+            builder.append("\n");
+            builder.append("  * ");
+            builder.append(messageFrom(constraintViolation));
+            if (constraintViolation.getInvalidValue() != null)
+            {
+                builder.append(" (value is ");
+                builder.append(constraintViolation.getInvalidValue());
+                builder.append(")");
+            }
+        }
+        return builder.toString();
+    }
+
+    private String messageFrom(ConstraintViolation<BasicApplicationConfig> constraintViolation) {
+        return constraintViolation.getPropertyPath() + ": " + constraintViolation.getMessage();
     }
 
     private BasicApplication buildFromConfig(BasicApplicationConfig config) {
@@ -165,46 +251,87 @@ public class BasicApplicationBuilder {
 
 
     public static class BasicApplicationConfig {
+        @NotNull
         String type;
+
+        @NotNull
         String os;
+
+        @NotNull
         String applicationName;
+
+        @NotNull
+        @Valid
         DeploymentConfig deployment;
+
+        @Min(0)
+        @Max(value = 60 * 60, message = "we don't think you really want to wait more than an hour")
         int waitTimeBetweenNodes = 10;
+
+        @NotNull
+        @Valid
         DeploymentVerification deploymentVerification;
+
+        @NotEmpty
+        @Valid
         Map<String, Environment> environments;
     }
 
     private static class DeploymentConfig {
+        @NotNull
         String name;
+
+        @Valid
         ExplodedPackaging explodedPackaging;
     }
 
     private static class ExplodedPackaging {
-        List<String> deploymentSpecificPaths;
-        List<String> ignoredPaths;
+        List<String> deploymentSpecificPaths = Collections.emptyList();
+        List<String> ignoredPaths = Collections.emptyList();
         String logPath;
     }
 
     private static class DeploymentVerification {
+        @NotNull
+        @Valid
         Ping ping;
     }
 
     private static class Ping {
+        @NotBlank
         String path;
+
+        @NotBlank
         String expectedContentRegex;
+
+        @Min(0)
+        @Max(value = 60 * 60, message = "we don't think you really want to wait more than an hour")
         int secondsBeforeTimeout;
     }
 
     private static class Environment {
+
+        @NotBlank
         String appserverBasePath;
+
+        @NotBlank
         String serviceName;
+
+        @NotEmpty
+        @Valid
         List<NodeConfig> nodes;
-        List<String> deploymentSubscribers;
+
+        List<String> deploymentSubscribers = Collections.emptyList();
+
+        @Min(1) @Max(65535)
         int port;
     }
 
     private static class NodeConfig {
+        @NotBlank
         String name;
+
+        @NotBlank
         String hostname;
     }
 

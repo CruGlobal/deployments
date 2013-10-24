@@ -1,0 +1,28 @@
+
+type: tomcat
+
+# missing os
+#os: windows
+
+# blank application name
+applicationName:
+
+deployment:
+  name: budget
+  # this is ok
+  explodedPackaging:
+
+deploymentVerification:
+  ping:
+    path: /budget/green.html
+    expectedContentRegex: .*OK.*
+    secondsBeforeTimeout: -1  # needs to be positive
+
+environments:
+  test:
+    appserverBasePath: W$/Tomcat/instances/fsg-inst
+    serviceName: Tomcat - FSG
+    nodes:
+      - name: ' ' # blank name
+        hostname: hart-a321.net.ccci.org
+    port: &standardPort 84800  #port is too big
