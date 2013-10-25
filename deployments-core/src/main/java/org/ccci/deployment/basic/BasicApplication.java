@@ -41,7 +41,6 @@ public class BasicApplication implements Application {
 
         require(options.username, "username");
         require(options.password, "password");
-        require(options.sourceDirectory, "sourceDirectory");
         if (options.domain == null)
             options.domain = "NET";
 
