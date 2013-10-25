@@ -1,21 +1,20 @@
 package org.ccci.deployment;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.ccci.deployment.DeploymentNotifier.Type;
 import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
-import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.LocalDeploymentStorage;
 import org.ccci.deployment.spi.WebappControlInterface;
 
-import com.google.common.base.Throwables;
+import org.ccci.deployment.util.Waiter;
 
 public class DeploymentDriver
 {
+
 
     public DeploymentDriver(Options options)
     {
@@ -25,6 +24,10 @@ public class DeploymentDriver
                 configuration.getDefaultRestartType();
         this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
         this.notifier = new DeploymentNotifier(options, configuration);
+
+        //TODO: timeout should be configurable
+        this.cautiousShutdown = new CautiousShutdown(configuration, nonfatalExceptionBehavior, 45);
+        this.initialAppCheck = new InitialAppCheck(configuration);
     }
 
     final Logger log = Logger.getLogger(DeploymentDriver.class);
@@ -36,7 +39,10 @@ public class DeploymentDriver
     private final ExceptionBehavior nonfatalExceptionBehavior;
 
     private final DeploymentNotifier notifier;
-    
+
+    private final CautiousShutdown cautiousShutdown;
+    private final InitialAppCheck initialAppCheck;
+
     public void deploy()
     {
         WebappDeployment deployment = configuration.buildWebappDeployment();
@@ -63,6 +69,8 @@ public class DeploymentDriver
           WebappDeployment deployment, 
           LocalDeploymentStorage localStorage)
     {
+        initialAppCheck.check();
+
         for (Node node : configuration.listNodes())
         {
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
@@ -71,64 +79,27 @@ public class DeploymentDriver
             transferInterface.transferNewDeploymentToServer(deployment, localStorage);
         }
         
-        boolean first = true;
+        Waiter waiter = new Waiter(configuration.getWaitTimeBetweenNodes());
         for (Node node : configuration.listNodes())
         {
-            waitIfNecessary(first);
-            first = false;
+            waiter.waitIfNecessary();
             
             log.info("executing restart on " + node.getName());
             DeploymentTransferInterface transferInterface = configuration.connectDeploymentTransferInterface(node);
             
             WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
-            if (configuration.supportsCautiousShutdown())
-            {
-                try
-                {
-                    removeNodeFromLoadbalancerService(webappControlInterface, node);
-                }
-                catch (RuntimeException e)
-                {
-                    if (nonfatalExceptionBehavior == ExceptionBehavior.LOG)
-                    {
-                        log.error("unable to remove " + node + " from loadbalancer service; continuing deployment", e);
-                    }
-                    else if (nonfatalExceptionBehavior == ExceptionBehavior.HALT)
-                    {
-                        throw e;
-                    }
-                    else
-                        throw new AssertionError();
-                }
-            }
-            
+
+            cautiousShutdown.cautiouslyShutdownIfPossible(node, webappControlInterface);
+
             AppserverInterface appserverInterface = configuration.buildAppserverInterface(node);
-            
-            if (restartType == RestartType.FULL_PROCESS_RESTART)
-            {
-                log.info("stopping app server");
-                appserverInterface.shutdownServer();
-            }
-            else
-            {
-                log.info("stopping webapp");
-                appserverInterface.stopApplication(deployment);
-            }
+
+            stop(deployment, appserverInterface);
 
             log.info("replacing old deployment with new deployment");
             transferInterface.backupOldDeploymentAndActivateNewDeployment(deployment, nonfatalExceptionBehavior);
-            
-            if (restartType == RestartType.FULL_PROCESS_RESTART)
-            {
-                log.info("starting app server");
-                appserverInterface.startupServer(nonfatalExceptionBehavior);
-            }
-            else
-            {
-                log.info("starting webapp");
-                appserverInterface.startApplication(deployment);
-            }
-            
+
+            start(deployment, appserverInterface);
+
             log.info("verifying that newly deployed webapp is serving requests");
             webappControlInterface.verifyNewDeploymentActive();
             log.info("verified");
@@ -137,59 +108,31 @@ public class DeploymentDriver
         }
     }
 
-    /*
-     *  Informs the load balancer to stop sending requests to this node
-     */
-    private void removeNodeFromLoadbalancerService(WebappControlInterface webappControlInterface, Node restartingNode)
-    {
-        log.info("disabling app");
-        webappControlInterface.disableForUpgrade();
-        
-        LoadbalancerInterface loadbalancerInterface = configuration.buildLoadBalancerInterface();
-        
-        int timeLimit = 30;
-        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeLimit);
-        
-        while (true)
+    private void start(WebappDeployment deployment, AppserverInterface appserverInterface) {
+        if (restartType == RestartType.FULL_PROCESS_RESTART)
         {
-            Node activeNode = loadbalancerInterface.getActiveNode();
-            if (! activeNode.equals(restartingNode))
-            {
-                return;
-            }
-            else
-            {
-                if (System.currentTimeMillis() > deadline)
-                    throw new RuntimeException("load balancer did not remove " + activeNode + 
-                        " from service within " + timeLimit + " seconds");
-                try
-                {
-                    TimeUnit.SECONDS.sleep(1);
-                }
-                catch (InterruptedException e)
-                {
-                    throw Throwables.propagate(e);
-                }
-            }
+            log.info("starting app server");
+            appserverInterface.startupServer(nonfatalExceptionBehavior);
         }
-        
+        else
+        {
+            log.info("starting webapp");
+            appserverInterface.startApplication(deployment);
+        }
     }
 
-    private void waitIfNecessary(boolean first)
-    {
-        int pauseTime = configuration.getWaitTimeBetweenNodes();
-        if (!first)
+    private void stop(WebappDeployment deployment, AppserverInterface appserverInterface) {
+        if (restartType == RestartType.FULL_PROCESS_RESTART)
         {
-            log.info("waiting " + pauseTime + " seconds before restarting next node");
-            try
-            {
-                TimeUnit.SECONDS.sleep(pauseTime);
-            }
-            catch (InterruptedException e)
-            {
-                throw Throwables.propagate(e);
-            }
+            log.info("stopping app server");
+            appserverInterface.shutdownServer();
+        }
+        else
+        {
+            log.info("stopping webapp");
+            appserverInterface.stopApplication(deployment);
         }
     }
+
 
 }

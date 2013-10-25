@@ -1,14 +1,13 @@
 package org.ccci.deployment.appserver;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Logger;
+import org.ccci.deployment.CautiousShutdown;
 import org.ccci.deployment.ConfigurationException;
 import org.ccci.deployment.DeploymentNotifier;
 import org.ccci.deployment.DeploymentNotifier.Type;
 import org.ccci.deployment.ExceptionBehavior;
 import org.ccci.deployment.FailoverDatabaseControlInterface;
+import org.ccci.deployment.InitialAppCheck;
 import org.ccci.deployment.Node;
 import org.ccci.deployment.Options;
 import org.ccci.deployment.spi.Application;
@@ -16,10 +15,10 @@ import org.ccci.deployment.spi.AppserverDeploymentConfiguration;
 import org.ccci.deployment.spi.AppserverInterface;
 import org.ccci.deployment.spi.DeploymentConfiguration;
 import org.ccci.deployment.spi.DeploymentTransferInterface;
-import org.ccci.deployment.spi.LoadbalancerInterface;
 import org.ccci.deployment.spi.WebappControlInterface;
+import org.ccci.deployment.util.Waiter;
 
-import com.google.common.base.Throwables;
+import java.io.File;
 
 /**
  * The purpose of this class is to transfer a newly-configured appserver
@@ -31,9 +30,10 @@ public class AppserverDeploymentDriver
 {
 
     final Logger log = Logger.getLogger(AppserverDeploymentDriver.class);
-    
-    private final Application application;
-    
+
+    private final CautiousShutdown cautiousShutdown;
+    private final InitialAppCheck initialAppCheck;
+
     private DeploymentConfiguration configuration;
     private File sourceDirectory;
 
@@ -45,16 +45,15 @@ public class AppserverDeploymentDriver
 
     private String stagingDirectory;
 
-    private AppserverDeploymentConfiguration appserverDeploymentConfiguration;
-
     private final DeploymentNotifier notifier;
     
     public AppserverDeploymentDriver(Options options)
     {
-        application = options.application;
+        Application application = options.application;
         
         configuration = application.buildDeploymentConfiguration(options);
-        appserverDeploymentConfiguration = application.buildAppserverDeploymentConfiguration(options);
+        AppserverDeploymentConfiguration appserverDeploymentConfiguration =
+            application.buildAppserverDeploymentConfiguration(options);
         installerScriptName = appserverDeploymentConfiguration.getInstallerScriptName();
         installationPackedName = appserverDeploymentConfiguration.getInstallationFileName();
         stagingDirectory = appserverDeploymentConfiguration.getStagingDirectory();
@@ -67,29 +66,31 @@ public class AppserverDeploymentDriver
 
         this.nonfatalExceptionBehavior = options.nonfatalExceptionBehavior;
         this.notifier = new DeploymentNotifier(options, configuration);
+
+        //TODO: timeout should be configurable
+        this.cautiousShutdown = new CautiousShutdown(configuration, nonfatalExceptionBehavior, 45);
+        this.initialAppCheck = new InitialAppCheck(configuration);
     }
 
     public void deploy()
     {
         try
         {
+            initialAppCheck.check();
+
             notifier.sendNotificationEmail(Type.APPLICATION_SERVER);
             String localFilePath = sourceDirectory + "/" + installationPackedName;
 
             log.info("installation file: " + localFilePath);
 
-            
             transferInstallationToNodes(localFilePath, stagingDirectory);
 
-            boolean first = true;
+            Waiter waiter = new Waiter(configuration.getWaitTimeBetweenNodes());
             for (Node node : configuration.listNodes())
             {
-                waitIfNecessary(first);
-                first = false;
-                
+                waiter.waitIfNecessary();
                 WebappControlInterface webappControlInterface = configuration.buildWebappControlInterface(node);
-
-                cautiouslyShutDownIfPossible(node, webappControlInterface);
+                cautiousShutdown.cautiouslyShutdownIfPossible(node, webappControlInterface);
                 flushFailoverDataIfNecessary(node);
                 updateAppserverInstallation(stagingDirectory, node);
                 verifyNewDeploymentServingRequests(webappControlInterface);
@@ -123,31 +124,6 @@ public class AppserverDeploymentDriver
         log.info("verifying that newly deployed webapp is serving requests");
         webappControlInterface.verifyNewDeploymentActive();
         log.info("verified");
-    }
-
-    private void cautiouslyShutDownIfPossible(Node node, WebappControlInterface webappControlInterface)
-            throws AssertionError
-    {
-        if (configuration.supportsCautiousShutdown())
-        {
-            try
-            {
-                removeNodeFromLoadbalancerService(webappControlInterface, node);
-            }
-            catch (RuntimeException e)
-            {
-                if (nonfatalExceptionBehavior == ExceptionBehavior.LOG)
-                {
-                    log.error("unable to remove " + node + " from loadbalancer service; continuing deployment", e);
-                }
-                else if (nonfatalExceptionBehavior == ExceptionBehavior.HALT)
-                {
-                    throw e;
-                }
-                else
-                    throw new AssertionError();
-            }
-        }
     }
 
     private void flushFailoverDataIfNecessary(Node node)
@@ -215,62 +191,6 @@ public class AppserverDeploymentDriver
             installerScriptName, 
             nonfatalExceptionBehavior);
         
-    }
-    
-    /**
-     *  Informs the load balancer to stop sending requests to this node
-     */
-    private void removeNodeFromLoadbalancerService(WebappControlInterface webappControlInterface, Node restartingNode)
-    {
-        log.info("disabling app");
-        webappControlInterface.disableForUpgrade();
-        
-        LoadbalancerInterface loadbalancerInterface = configuration.buildLoadBalancerInterface();
-        
-        //TODO: this should be configurable
-        int timeLimit = 45;
-        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeLimit);
-        
-        while (true)
-        {
-            Node activeNode = loadbalancerInterface.getActiveNode();
-            if (! activeNode.equals(restartingNode))
-            {
-                return;
-            }
-            else
-            {
-                if (System.currentTimeMillis() > deadline)
-                    throw new RuntimeException("load balancer did not remove " + activeNode + 
-                        " from service within " + timeLimit + " seconds");
-                try
-                {
-                    TimeUnit.SECONDS.sleep(1);
-                }
-                catch (InterruptedException e)
-                {
-                    throw Throwables.propagate(e);
-                }
-            }
-        }
-        
-    }
-
-    private void waitIfNecessary(boolean first)
-    {
-        int pauseTime = configuration.getWaitTimeBetweenNodes();
-        if (!first)
-        {
-            log.info("waiting " + pauseTime + " seconds before restarting next node");
-            try
-            {
-                TimeUnit.SECONDS.sleep(pauseTime);
-            }
-            catch (InterruptedException e)
-            {
-                throw Throwables.propagate(e);
-            }
-        }
     }
 
 }
