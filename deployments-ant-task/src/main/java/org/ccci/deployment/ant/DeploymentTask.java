@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.ccci.deployment.ApplicationConverter;
@@ -100,6 +101,8 @@ public class DeploymentTask extends Task
 
     public void setApplicationConfiguration(File applicationConfiguration)
     {
+        AntClassLoader loader = (AntClassLoader) getClass().getClassLoader();
+        loader.setThreadContextLoader();
         try
         {
             options.application = new BasicApplicationBuilder().buildFrom(applicationConfiguration);
@@ -107,6 +110,9 @@ public class DeploymentTask extends Task
         catch (IllegalArgumentException e)
         {
             throw new BuildException(e.getMessage());
+        }
+        finally {
+            loader.resetThreadContextLoader();
         }
     }
     
