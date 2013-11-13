@@ -394,7 +394,7 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         }
         catch (SmbException e)
         {
-            throw new IOException("Could not move " + webappDeploymentPathAsString + " to " + backupPathAsString);
+            throw new IOException("Could not move " + webappDeploymentPathAsString + " to " + backupPathAsString, e);
         }
     }
     
