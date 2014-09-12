@@ -19,7 +19,8 @@ public class DeploymentFileDescription
     /**
      * These paths will not be transferred to the server, but they will be copied
      * from the old deployment to the new deployment. These should contain configuration
-     * files and other deployment-specific files, such as file-based caches.
+     * files and other deployment-specific files, such as file-based caches.  These paths
+     * can be directories that we do not want to deploy along with the rest of the project.
      */
     public Set<String> getDeploymentSpecificPaths()
     {
@@ -51,5 +52,4 @@ public class DeploymentFileDescription
     {
         return ignoredPaths;
     }
-    
 }

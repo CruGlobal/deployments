@@ -186,12 +186,44 @@ public class SmbDeploymentTransferService implements DeploymentTransferInterface
         for (String path : deploymentFileDescription.getDeploymentSpecificPaths())
         {
             path = removeInitialSlash(path);
-            SmbFile sourceFile = endpoint.createChildFilePath(remoteDeploymentPath, path);
+
+            SmbFile sourceFile;
+            boolean isDirectory;
+
+            if(path.endsWith("/"))
+            {
+                //Must first remove the trailing "/" in order to avoid a failing precondition
+                path = path.substring(0, path.length() - 1);
+                sourceFile = endpoint.createChildDirectoryPath(remoteDeploymentPath, path);
+                isDirectory = sourceFile.isDirectory();
+            }
+            else
+            {
+                sourceFile = endpoint.createChildFilePath(remoteDeploymentPath, path);
+                isDirectory = sourceFile.isDirectory();
+
+                //Need to redo this one if it is actually a directory,
+                //this is in case a person puts a directory name without a trailing slash
+                if(isDirectory)
+                {
+                    sourceFile = endpoint.createChildDirectoryPath(remoteDeploymentPath, path);
+                }
+            }
+
             if (sourceFile.exists())
             //when introducing a new config file, the current deployment will not have it yet,
             //so skip the copying.
             {
-                SmbFile targetFile = endpoint.createChildFilePath(remoteTransferPath, path);
+                SmbFile targetFile;
+
+                if(isDirectory)
+                {
+                    targetFile = endpoint.createChildDirectoryPath(remoteTransferPath, path);
+                }
+                else
+                {
+                    targetFile = endpoint.createChildFilePath(remoteTransferPath, path);
+                }
                 assert !targetFile.exists();
                 sourceFile.copyTo(targetFile);
             }
