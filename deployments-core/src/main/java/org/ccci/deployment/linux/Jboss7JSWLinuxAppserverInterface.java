@@ -18,7 +18,8 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
     private final SshSession session;
     private final String jswBinPath;
     private final String requiredUser;
-    
+    private final ZipScriptInstaller zipScriptInstaller;
+
     private Logger log = Logger.getLogger(getClass());
     private int startupWaitTime = 240;
     
@@ -30,6 +31,7 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
         this.requiredUser = requiredUser;
         this.jswBinPath = jswBinPath;
         this.session = sshSession;
+        this.zipScriptInstaller = new ZipScriptInstaller(session, requiredUser, this);
     }
 
     @Override
@@ -184,19 +186,11 @@ public class Jboss7JSWLinuxAppserverInterface implements AppserverInterface
     {
         try
         {
-            AsUser asJboss = session.as(requiredUser);
-            log.info("clearing old backup if necessary");
-            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/installation");
-            asJboss.executeSingleCommand("rm -rf " + stagingDirectory + "/jboss-as-*");
-            log.info("unzipping installation archive");
-            /* '-q' means 'quiet', '-d' means target directory for extraction */
-            asJboss.executeSingleCommand("unzip -q " + stagingDirectory + "/" + jbossInstallationPackedName + " -d " + stagingDirectory);
-            log.info("stopping jboss");
-            shutdownServer();
-            log.info("running installer");
-            asJboss.executeSingleCommand("sh " + stagingDirectory + "/installation/" + installerScriptName);
-            log.info("starting jboss");
-            startupServer(nonfatalExceptionBehavior);
+            zipScriptInstaller.install(
+                stagingDirectory,
+                jbossInstallationPackedName,
+                installerScriptName,
+                nonfatalExceptionBehavior);
         }
         catch (IOException e)
         {
