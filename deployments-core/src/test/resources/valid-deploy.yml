@@ -15,6 +15,7 @@ deployment:
       - /WEB-INF/classes/WebMacro.properties
       - /WEB-INF/classes/admins.yml
       - /WEB-INF/classes/password.yml
+      - /themes/
     ignore:
       - /WEB-INF/logs
 
