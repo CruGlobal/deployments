@@ -201,6 +201,7 @@ public class SimpleWindowsServiceAppserverInterface implements AppserverInterfac
         }
         //using unixUtil's rm since windows' rd can't handle wildcards
         remoteShell.executeSingleCommand(unxUtilsLocation + "\\rm --recursive --force " + stagingDirectoryWinPath + "\\jboss-as-*");
+        remoteShell.executeSingleCommand(unxUtilsLocation + "\\rm --recursive --force " + stagingDirectoryWinPath + "\\wildfly-*");
     }
 
     String convertToWindowsPath(String stagingDirectory)
