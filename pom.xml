@@ -10,7 +10,21 @@
   <scm>
     <developerConnection>scm:git:https://github.com/CruGlobal/deployments.git</developerConnection>
   </scm>
-  
+
+  <distributionManagement>
+    <repository>
+      <name>Cru Private Releases</name>
+      <url>https://cruglobal.jfrog.io/cruglobal/list/maven-cru-private-releases-local/</url>
+      <id>cruglobal.jfrog.io</id>
+    </repository>
+
+    <snapshotRepository>
+      <name>Cru Private Snapshots</name>
+      <url>https://cruglobal.jfrog.io/cruglobal/list/maven-cru-private-snapshots-local/</url>
+      <id>cruglobal.jfrog.io</id>
+    </snapshotRepository>
+  </distributionManagement>
+
   <modules>
     <module>deployments-core</module>
     <module>deployments-maven-plugin</module>
