@@ -7,13 +7,6 @@
   <name>Webapp Deployment Tools (Parent)</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  
-  <parent>
-    <groupId>org.ccci</groupId>
-    <artifactId>abstract-java-project</artifactId>
-    <version>1</version>
-    <relativePath />
-  </parent>
- 
   <scm>
     <developerConnection>scm:git:https://github.com/CruGlobal/deployments.git</developerConnection>
   </scm>
@@ -24,8 +17,10 @@
     <module>deployments-ant-task</module>
     <module>deployments-command-line</module>
   </modules> 
-      
+
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.source.version>1.6</java.source.version>
   </properties>
 
   <build>
