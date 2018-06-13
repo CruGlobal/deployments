@@ -12,15 +12,7 @@
     <version>3-SNAPSHOT</version> 
   </parent>
  
-  <scm>
-    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments</developerConnection>
-  </scm>
-  
-      
-  <properties>
-    <svn.repository.path>commons</svn.repository.path>
-  </properties>
- 
+
   <dependencies>
     
     <dependency>

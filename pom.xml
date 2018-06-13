@@ -15,7 +15,7 @@
   </parent>
  
   <scm>
-    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments</developerConnection>
+    <developerConnection>scm:git:https://github.com/CruGlobal/deployments.git</developerConnection>
   </scm>
   
   <modules>
@@ -26,7 +26,6 @@
   </modules> 
       
   <properties>
-    <svn.repository.path>commons</svn.repository.path>
   </properties>
 
   <build>
