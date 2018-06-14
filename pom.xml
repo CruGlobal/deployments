@@ -7,26 +7,34 @@
   <name>Webapp Deployment Tools (Parent)</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  
-  <parent>
-    <groupId>org.ccci</groupId>
-    <artifactId>abstract-java-project</artifactId>
-    <version>1</version>
-    <relativePath />
-  </parent>
- 
   <scm>
-    <developerConnection>scm:svn:http://arkham.ccci.org/svn/java/trunk/commons/deployments</developerConnection>
+    <developerConnection>scm:git:https://github.com/CruGlobal/deployments.git</developerConnection>
   </scm>
-  
+
+  <distributionManagement>
+    <repository>
+      <name>Cru Private Releases</name>
+      <url>https://cruglobal.jfrog.io/cruglobal/list/maven-cru-private-releases-local/</url>
+      <id>cruglobal.jfrog.io</id>
+    </repository>
+
+    <snapshotRepository>
+      <name>Cru Private Snapshots</name>
+      <url>https://cruglobal.jfrog.io/cruglobal/list/maven-cru-private-snapshots-local/</url>
+      <id>cruglobal.jfrog.io</id>
+    </snapshotRepository>
+  </distributionManagement>
+
   <modules>
     <module>deployments-core</module>
     <module>deployments-maven-plugin</module>
     <module>deployments-ant-task</module>
     <module>deployments-command-line</module>
   </modules> 
-      
+
   <properties>
-    <svn.repository.path>commons</svn.repository.path>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.source.version>1.6</java.source.version>
   </properties>
 
   <build>
