@@ -3,7 +3,7 @@
   <groupId>org.ccci</groupId>
   <artifactId>deployments-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3-SNAPSHOT</version>
+  <version>3</version>
   <name>Webapp Deployment Tools (Parent)</name>
   <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
  

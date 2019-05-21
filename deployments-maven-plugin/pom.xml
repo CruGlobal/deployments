@@ -6,7 +6,7 @@
   <parent>
     <artifactId>deployments-parent</artifactId>
     <groupId>org.ccci</groupId>
-    <version>3-SNAPSHOT</version>
+    <version>3</version>
   </parent>
 
   <artifactId>deployments-maven-plugin</artifactId>
