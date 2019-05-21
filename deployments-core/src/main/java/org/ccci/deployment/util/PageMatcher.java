@@ -11,7 +11,6 @@ import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
@@ -76,29 +75,24 @@ public class PageMatcher
             try
             {
                 HttpResponse response = httpclient.execute(request);
-                try
+                final String content = EntityUtils.toString(response.getEntity());
+
+                StatusLine statusLine = response.getStatusLine();
+                if (statusLine.getStatusCode() == 200)
                 {
-                    StatusLine statusLine = response.getStatusLine();
-                    if (statusLine.getStatusCode() == 200)
-                    {
-                        return matchPage(response, successPattern, regularExpression, pageName);
-                    }
-                    else if (statusLine.getStatusCode() == 404)
-                        log.debug("received 404; continuing to try to connect");
-                    else if(statusLine.getStatusCode() == 400 && statusLine.getReasonPhrase().contains("No Host matches server name"))
-                    {
-                        // Sometimes Tomcat responds with a 400 'No Host matches server name <hostname>' when
-                        // the webapp is still loading.
-                        log.debug("received 400 'No Host matches'; continuing to try to connect");
-                    }
-                    else
-                        throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+                    return matchPage(successPattern, regularExpression, pageName, content);
                 }
-                finally
-                //free up http connection
+                else if (statusLine.getStatusCode() == 404)
+                    log.debug("received 404; continuing to try to connect");
+                else if(statusLine.getStatusCode() == 400 && statusLine.getReasonPhrase().contains("No Host matches server name"))
                 {
-                    response.getEntity().consumeContent();
+                    // Sometimes Tomcat responds with a 400 'No Host matches server name <hostname>' when
+                    // the webapp is still loading.
+                    log.debug("received 400 'No Host matches'; continuing to try to connect");
                 }
+                else
+                    throw new RuntimeException(pageName + " not available; status line: " + statusLine);
+
             }
             catch (HttpHostConnectException e)
             {
@@ -138,9 +132,13 @@ public class PageMatcher
 
     }
     
-    private Matcher matchPage(HttpResponse response, Pattern successPattern, String regularExpression, String pageName) throws ParseException, IOException
+    private Matcher matchPage(
+        Pattern successPattern,
+        String regularExpression,
+        String pageName,
+        String content
+    ) throws ParseException
     {
-        String content = EntityUtils.toString(response.getEntity());
         Matcher matcher = successPattern.matcher(content);
         if (matcher.matches())
         {
@@ -193,22 +191,15 @@ public class PageMatcher
             try
             {
                 HttpResponse response = httpclient.execute(request);
-                try
+                final String content = EntityUtils.toString(response.getEntity());
+                StatusLine statusLine = response.getStatusLine();
+                if (statusLine.getStatusCode() == 200)
                 {
-                    StatusLine statusLine = response.getStatusLine();
-                    if (statusLine.getStatusCode() == 200)
-                    {
-                        return matchPage(response, successPattern, regularExpression, pageName);
-                    }
-                    else
-                    {
-                        throw new RuntimeException(pageName + " not available; status line: " + statusLine);
-                    }
+                    return matchPage(successPattern, regularExpression, pageName, content);
                 }
-                finally
-                //free up http connection
+                else
                 {
-                    response.getEntity().consumeContent();
+                    throw new RuntimeException(pageName + " not available; status line: " + statusLine);
                 }
             }
             catch (HttpHostConnectException e)
