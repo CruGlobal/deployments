@@ -1,17 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.ccci</groupId>
-  <artifactId>deployments-core</artifactId>
-  <version>3-SNAPSHOT</version>
-  <name>Webapp Deployment Tools (Core)</name>
-  <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
- 
+
   <parent>
     <groupId>org.ccci</groupId>
     <artifactId>deployments-parent</artifactId>
-    <version>3-SNAPSHOT</version> 
+    <version>3</version> 
   </parent>
- 
+
+  <artifactId>deployments-core</artifactId>
+  <name>Webapp Deployment Tools (Core)</name>
+  <description>This project contains tools for transferring webapps to remote app servers and deploying them.</description>
 
   <dependencies>
     
@@ -46,7 +44,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.0</version>
+      <version>4.5.8</version>
     </dependency>
     
     <dependency>
